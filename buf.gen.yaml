@@ -1,0 +1,24 @@
+version: v1
+plugins:
+  - name: go
+    out: ./internal/pb
+    opt: paths=source_relative
+    path: bin/protoc-gen-go
+  - name: go-grpc
+    out: ./internal/pb
+    opt: paths=source_relative
+    path: bin/protoc-gen-go-grpc
+  - name: grpc-gateway
+    out: ./internal/pb
+    opt:
+      - allow_delete_body=true
+      - generate_unbound_methods=true
+      - logtostderr=true
+      - paths=source_relative
+    path: bin/protoc-gen-grpc-gateway
+  - name: openapiv2
+    out: ./internal/pb
+    opt:
+      - allow_delete_body=true
+      - generate_unbound_methods=true
+    path: bin/protoc-gen-openapiv2

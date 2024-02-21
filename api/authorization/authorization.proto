@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package mrga.authorization;
+
+option go_package="mrga/service/authorization";
+
+import "google/protobuf/wrappers.proto";
+import "google/api/annotations.proto";
+
+service Authorization{
+  rpc SignUPV1 (SignUPRequest) returns (SignUPResponse){
+    option (google.api.http) = {
+      post: "/v1/sign_up"
+      body: "*"
+    };
+  }
+}
+
+// Данные для запроса регистрации пользователя
+message SignUPRequest {
+  google.protobuf.StringValue email = 1; // Почта
+  google.protobuf.StringValue password = 2; // Пароль
+}
+
+message SignUPResponse {
+}
