@@ -34,3 +34,7 @@ DEPENDENCIES = google.golang.org/protobuf/cmd/protoc-gen-go \
 generate: .install-dependencies
 	@mkdir -p $(GEN_DIR)
 	@$(GOBIN)/buf generate
+
+.PHONY: run
+run:
+	go run ./cmd/bff/main.go

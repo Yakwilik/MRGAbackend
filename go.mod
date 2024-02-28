@@ -1,6 +1,6 @@
 module github.com/Yakwilik/MRGAbackend
 
-go 1.21.0
+go 1.22.0
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
@@ -10,7 +10,9 @@ require (
 )
 
 require (
+	github.com/go-chi/chi/v5 v5.0.12 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
