@@ -16,6 +16,60 @@
     "application/json"
   ],
   "paths": {
+    "/v1/check_login": {
+      "get": {
+        "operationId": "Authorization_CheckLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorizationCheckLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Authorization"
+        ]
+      }
+    },
+    "/v1/login": {
+      "post": {
+        "operationId": "Authorization_Login",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authorizationLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authorizationLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Authorization"
+        ]
+      }
+    },
     "/v1/sign_up": {
       "post": {
         "operationId": "Authorization_SignUPV1",
@@ -50,6 +104,36 @@
     }
   },
   "definitions": {
+    "authorizationCheckLoginResponse": {
+      "type": "object",
+      "properties": {
+        "isLogged": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string",
+          "title": "Почта"
+        }
+      },
+      "title": "Данные для ответа на запрос проверки авторизации пользователя"
+    },
+    "authorizationLoginRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "title": "Почта"
+        },
+        "password": {
+          "type": "string",
+          "title": "Пароль"
+        }
+      },
+      "title": "Данные для запроса авторизации пользователя"
+    },
+    "authorizationLoginResponse": {
+      "type": "object"
+    },
     "authorizationSignUPRequest": {
       "type": "object",
       "properties": {

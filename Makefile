@@ -38,3 +38,10 @@ generate: .install-dependencies
 .PHONY: run
 run:
 	go run ./cmd/bff/main.go
+
+.PHONY: build-image
+build-image:
+	docker build -t app -f build/Dockerfile .
+
+run-in-container:
+	 docker run -p 7001:7001 -p 7002:7002 myapp

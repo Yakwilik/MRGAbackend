@@ -19,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Authorization_SignUPV1_FullMethodName = "/mrga.authorization.Authorization/SignUPV1"
+	Authorization_SignUPV1_FullMethodName   = "/mrga.authorization.Authorization/SignUPV1"
+	Authorization_Login_FullMethodName      = "/mrga.authorization.Authorization/Login"
+	Authorization_CheckLogin_FullMethodName = "/mrga.authorization.Authorization/CheckLogin"
 )
 
 // AuthorizationClient is the client API for Authorization service.
@@ -27,6 +29,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthorizationClient interface {
 	SignUPV1(ctx context.Context, in *SignUPRequest, opts ...grpc.CallOption) (*SignUPResponse, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	CheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CheckLoginResponse, error)
 }
 
 type authorizationClient struct {
@@ -46,11 +50,31 @@ func (c *authorizationClient) SignUPV1(ctx context.Context, in *SignUPRequest, o
 	return out, nil
 }
 
+func (c *authorizationClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, Authorization_Login_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authorizationClient) CheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CheckLoginResponse, error) {
+	out := new(CheckLoginResponse)
+	err := c.cc.Invoke(ctx, Authorization_CheckLogin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthorizationServer is the server API for Authorization service.
 // All implementations must embed UnimplementedAuthorizationServer
 // for forward compatibility
 type AuthorizationServer interface {
 	SignUPV1(context.Context, *SignUPRequest) (*SignUPResponse, error)
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	CheckLogin(context.Context, *CheckLoginRequest) (*CheckLoginResponse, error)
 	mustEmbedUnimplementedAuthorizationServer()
 }
 
@@ -60,6 +84,12 @@ type UnimplementedAuthorizationServer struct {
 
 func (UnimplementedAuthorizationServer) SignUPV1(context.Context, *SignUPRequest) (*SignUPResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignUPV1 not implemented")
+}
+func (UnimplementedAuthorizationServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthorizationServer) CheckLogin(context.Context, *CheckLoginRequest) (*CheckLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckLogin not implemented")
 }
 func (UnimplementedAuthorizationServer) mustEmbedUnimplementedAuthorizationServer() {}
 
@@ -92,6 +122,42 @@ func _Authorization_SignUPV1_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Authorization_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Authorization_Login_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Authorization_CheckLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServer).CheckLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Authorization_CheckLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServer).CheckLogin(ctx, req.(*CheckLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Authorization_ServiceDesc is the grpc.ServiceDesc for Authorization service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -102,6 +168,14 @@ var Authorization_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SignUPV1",
 			Handler:    _Authorization_SignUPV1_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _Authorization_Login_Handler,
+		},
+		{
+			MethodName: "CheckLogin",
+			Handler:    _Authorization_CheckLogin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -14,6 +14,19 @@ service Authorization{
       body: "*"
     };
   }
+
+  rpc Login (LoginRequest) returns (LoginResponse){
+    option(google.api.http) = {
+      post: "/v1/login"
+      body: "*"
+    };
+  }
+
+  rpc CheckLogin (CheckLoginRequest) returns (CheckLoginResponse){
+    option(google.api.http) = {
+      get: "/v1/check_login"
+    };
+  }
 }
 
 // Данные для запроса регистрации пользователя
@@ -23,4 +36,24 @@ message SignUPRequest {
 }
 
 message SignUPResponse {
+}
+
+// Данные для запроса авторизации пользователя
+message LoginRequest {
+  google.protobuf.StringValue email = 1; // Почта
+  google.protobuf.StringValue password = 2; // Пароль
+}
+
+message LoginResponse {
+}
+
+
+// Данные для запроса проверки авторизации пользователя
+message CheckLoginRequest {
+}
+
+// Данные для ответа на запрос проверки авторизации пользователя
+message CheckLoginResponse {
+  bool is_logged = 1;
+  google.protobuf.StringValue email = 2; // Почта
 }
