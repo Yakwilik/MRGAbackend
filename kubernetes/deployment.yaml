@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speranskiy-backend-deployment
+  labels:
+    app: speranskiy-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: speranskiy-backend
+  template:
+    metadata:
+      labels:
+        app: speranskiy-backend
+    spec:
+      containers:
+        - name: speranskiy-backend
+          image: yakwilik/speranskiy_backend:latest
+          ports:
+            - containerPort: 7001
+            - containerPort: 7002
