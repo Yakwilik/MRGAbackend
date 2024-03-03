@@ -117,6 +117,7 @@ func (a *App) runPublicHTTP() {
 	publicServer := &http.Server{
 		Handler: cors(a.publicMux),
 	}
+
 	go func() {
 		defer a.wg.Done()
 		if err := publicServer.Serve(a.lis.http); err != nil && !errors.Is(err, http.ErrServerClosed) {

@@ -33,6 +33,8 @@ DEPENDENCIES = google.golang.org/protobuf/cmd/protoc-gen-go \
 .PHONY: generate
 generate: .install-dependencies
 	@mkdir -p $(GEN_DIR)
+	@$(GOBIN)/buf mod update
+	@$(GOBIN)/buf build
 	@$(GOBIN)/buf generate
 
 .PHONY: run

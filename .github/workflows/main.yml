@@ -37,7 +37,9 @@ jobs:
           context: .
           file: ${{ github.workspace }}/build/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:${{ github.sha }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -64,3 +66,5 @@ jobs:
             kubernetes/deployment.yaml
             kubernetes/ingress.yaml
             kubernetes/service.yaml
+          images: |
+            ${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:${{ github.sha }}
