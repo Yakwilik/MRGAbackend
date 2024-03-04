@@ -16,7 +16,20 @@ spec:
                 name: speranskiy-backend-service
                 port:
                   number: 7001
+    - host: khasbulat.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: speranskiy-backend-service
+                port:
+                  number: 7001
   tls:
     - hosts:
         - meetme-app.ru
       secretName: meetme-app-tls-prod
+    - hosts:
+        - khasbulat.ru
+      secretName: khasbulat-tls-prod

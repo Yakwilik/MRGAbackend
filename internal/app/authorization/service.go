@@ -81,9 +81,9 @@ func (a *Implementation) SignUPV1(ctx context.Context, req *pb.SignUPRequest) (*
 		Value:    session,
 		Path:     "/",
 		Expires:  time.Now().Add(time.Hour * 24),
-		Secure:   false,
+		Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	}
 
 	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{
