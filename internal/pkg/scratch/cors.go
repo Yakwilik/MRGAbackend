@@ -1,13 +1,17 @@
 package scratch
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 var allowedHosts = []string{}
+var now = time.Now()
 
 func cors(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("ApiVersion", "2024:03:03-01:31")
-		if r.Header.Get("Access-Control-Allow-Origin") == "" {
+		w.Header().Set("ApiVersion", now.String())
+		if r.Header.Get("Origin") == "" {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 		} else {
 			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))

@@ -17,8 +17,44 @@ option (gnostic.openapi.v3.document) = {
     version: "1.0";
   };
   servers: [
-    {url: "http://localhost:7001";},
-    {url: "http://194.61.3.193";}
+    {
+      url: "{scheme}://{host}:{port}";
+      variables: {
+        additional_properties :[
+        {
+          name: "port";
+          value: {
+            enum: [
+              "80",
+              "7001",
+              "443"
+            ];
+            default: "7001";
+          };
+        },
+        {
+          name: "scheme";
+          value: {
+            enum: [
+              "http",
+              "https"
+            ];
+            default: "http";
+          };
+        },
+        {
+          name: "host";
+          value: {
+            enum: [
+              "localhost",
+              "194.61.3.193"
+            ];
+            default: "localhost";
+          };
+        }
+      ];
+    };
+    }
   ];
 };
 
