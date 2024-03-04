@@ -23,6 +23,7 @@ servers:
             enum:
                 - localhost
                 - 194.61.3.193
+                - meetme-app.ru
             default: localhost
 paths:
     /v1/check_login:

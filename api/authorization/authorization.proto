@@ -47,7 +47,8 @@ option (gnostic.openapi.v3.document) = {
           value: {
             enum: [
               "localhost",
-              "194.61.3.193"
+              "194.61.3.193",
+              "meetme-app.ru"
             ];
             default: "localhost";
           };
