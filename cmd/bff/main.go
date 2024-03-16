@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Yakwilik/MRGAbackend/internal/app/authorization"
+	"github.com/Yakwilik/MRGAbackend/internal/app/grpc/authorization"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/scratch"
 	"log"
 )

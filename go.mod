@@ -14,7 +14,9 @@ require (
 )
 
 require (
+	github.com/a-h/templ v0.2.598 // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

@@ -6,7 +6,6 @@ option go_package="mrga/service/authorization";
 
 import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
-//import "openapiv3/annotations.proto";
 
 import "gnostic/openapi/v3/openapiv3.proto";
 import "gnostic/openapi/v3/annotations.proto";
@@ -46,9 +45,9 @@ option (gnostic.openapi.v3.document) = {
           name: "host";
           value: {
             enum: [
-              "localhost",
-              "194.61.3.193",
-              "meetme-app.ru"
+              "localhost/api",
+              "194.61.3.193/api",
+              "meetme-app.ru/api"
             ];
             default: "localhost";
           };

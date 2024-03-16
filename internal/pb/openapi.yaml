@@ -21,9 +21,9 @@ servers:
             default: http
         host:
             enum:
-                - localhost
-                - 194.61.3.193
-                - meetme-app.ru
+                - localhost/api
+                - 194.61.3.193/api
+                - meetme-app.ru/api
             default: localhost
 paths:
     /v1/check_login:

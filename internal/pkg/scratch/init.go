@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/Yakwilik/MRGAbackend/internal/app/rest"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -25,6 +26,7 @@ type ServiceDesc interface {
 
 type App struct {
 	desc       ServiceDesc
+	mux        *http.ServeMux
 	publicMux  *runtime.ServeMux
 	grpcServer *grpc.Server
 	opts       *Options
@@ -114,8 +116,12 @@ func (a *App) runGRPC() {
 func (a *App) runPublicHTTP() {
 	a.wg.Add(1)
 
+	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", a.publicMux))
+
+	a.mux.Handle("/api/", http.StripPrefix("/api", rest.New().Init()))
+
 	publicServer := &http.Server{
-		Handler: cors(a.publicMux),
+		Handler: cors(a.mux),
 	}
 
 	go func() {
@@ -147,4 +153,5 @@ func (a *App) initPublicHTTPHandlers(desc ServiceDesc) {
 
 func (a *App) initPublicHTTP() {
 	a.publicMux = runtime.NewServeMux(a.opts.ServeMuxOpts...)
+	a.mux = http.NewServeMux()
 }
