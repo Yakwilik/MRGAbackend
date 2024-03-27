@@ -249,7 +249,9 @@ components:
             description: Данные для запроса авторизации пользователя
         LoginResponse:
             type: object
-            properties: {}
+            properties:
+                email:
+                    type: string
         Message:
             type: object
             properties:
@@ -286,7 +288,9 @@ components:
             description: Данные для запроса регистрации пользователя
         SignUPResponse:
             type: object
-            properties: {}
+            properties:
+                email:
+                    type: string
         Status:
             type: object
             properties:

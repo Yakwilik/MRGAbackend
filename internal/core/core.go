@@ -41,6 +41,14 @@ func (a *usecase) SignUp(ctx context.Context, user model.User) error {
 }
 
 func (a *usecase) Login(ctx context.Context, user model.User) (string, error) {
+	err := a.storage.CheckCredentials(ctx, user)
+	if err != nil {
+		if errors.Is(err, model.ErrBadCredentials) {
+			return "", model.NewValidationError("credentials", "bad login data", "Неверный логин или пароль")
+		}
+		return "", err
+	}
+
 	session, err := a.storage.CreateSession(ctx, user)
 	if err != nil {
 		if errors.Is(err, model.ErrBadCredentials) {

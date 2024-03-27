@@ -65,7 +65,20 @@ func (a *Implementation) SignUPV1(ctx context.Context, req *pb.SignUPRequest) (*
 		return nil, status.New(codes.Internal, err.Error()).Err()
 	}
 
-	return &pb.SignUPResponse{}, nil
+	sessionID, err := a.useCase.Login(ctx, model.User{
+		Email:    req.GetEmail().GetValue(),
+		Password: req.GetPassword().GetValue(),
+	})
+	if err != nil {
+		if errValidation := new(model.ValidationError); errors.As(err, &errValidation) {
+			return nil, errValidation.WithDetails(codes.InvalidArgument)
+		}
+		return nil, err
+	}
+
+	helper.SetSessionID(ctx, sessionID)
+
+	return &pb.SignUPResponse{Email: req.GetEmail().GetValue()}, nil
 }
 
 func (a *Implementation) CheckLogin(ctx context.Context, req *pb.CheckLoginRequest) (*pb.CheckLoginResponse, error) {
@@ -102,7 +115,7 @@ func (a *Implementation) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 
 	helper.SetSessionID(ctx, sessionID)
 
-	return nil, nil
+	return &pb.LoginResponse{Email: req.GetEmail().GetValue()}, nil
 }
 
 func (a *Implementation) BeginConversation(ctx context.Context, request *pb.BeginConversationRequest) (*pb.BeginConversationResponse, error) {

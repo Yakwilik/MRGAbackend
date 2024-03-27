@@ -171,6 +171,7 @@ message SignUPRequest {
 }
 
 message SignUPResponse {
+  string email = 1;
 }
 
 // Данные для запроса авторизации пользователя
@@ -180,6 +181,7 @@ message LoginRequest {
 }
 
 message LoginResponse {
+  string email = 1;
 }
 
 

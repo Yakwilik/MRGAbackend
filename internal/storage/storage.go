@@ -20,6 +20,7 @@ type Interface interface {
 	CreateMessage(ctx context.Context, data model.CreateMessageData) error
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
 	GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error)
+	CheckCredentials(ctx context.Context, user model.User) error
 }
 
 type storage struct {
@@ -203,4 +204,17 @@ func decodeMessages(dbMessages []message) []model.Message {
 	}
 
 	return result
+}
+
+func (s *storage) CheckCredentials(ctx context.Context, user model.User) error {
+	exists := false
+	if err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND password_hash = $2)", user.Email, user.Password).Scan(&exists); err != nil {
+		return fmt.Errorf("error executing query [GetEmailBySession]: %w", err)
+	}
+
+	if !exists {
+		return model.ErrBadCredentials
+	}
+
+	return nil
 }
