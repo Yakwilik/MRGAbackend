@@ -115,11 +115,14 @@ service Authorization{
   }
 }
 
-message SendMessageRequest{
+message NewMessage {
   string message = 1;
-  uint32 chat_id = 2;
   google.protobuf.Timestamp sent_at = 3;
-  bool from_bot = 4;
+}
+
+message SendMessageRequest{
+  uint32 chat_id = 1;
+  NewMessage msg = 2;
 }
 
 message SendMessageResponse{
@@ -127,6 +130,8 @@ message SendMessageResponse{
 }
 
 message BeginConversationRequest {
+  uint32 chat_id = 1;
+  NewMessage msg = 2;
 }
 
 message BeginConversationResponse{

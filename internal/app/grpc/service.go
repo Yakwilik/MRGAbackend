@@ -129,6 +129,14 @@ func (a *Implementation) BeginConversation(ctx context.Context, request *pb.Begi
 		return nil, status.New(codes.Internal, err.Error()).Err()
 	}
 
+	err = a.useCase.SendMessage(ctx, decodeSendMessageRequest(request.GetChatId(), request.GetMsg()))
+	if err != nil {
+		if errValidation := new(model.ValidationError); errors.As(err, &errValidation) {
+			return nil, errValidation.WithDetails(codes.InvalidArgument)
+		}
+		return nil, err
+	}
+
 	return &pb.BeginConversationResponse{
 		ChatId: chatID,
 	}, nil
@@ -192,12 +200,12 @@ func (a *Implementation) GetConversation(ctx context.Context, request *pb.GetCon
 	return &pb.GetConversationResponse{Messages: encodeMessages(messages)}, nil
 }
 
-func decodeSendMessageRequest(request *pb.SendMessageRequest) model.CreateMessageData {
+func decodeSendMessageRequest(chatID uint32, newMessage *pb.NewMessage) model.CreateMessageData {
 	return model.CreateMessageData{
-		ChatID:  request.ChatId,
-		SentAt:  helper.ConvertProtoTimestampOrNow(request.SentAt),
-		FromBot: request.FromBot,
-		Message: request.Message,
+		ChatID:  chatID,
+		SentAt:  helper.ConvertProtoTimestampOrNow(newMessage.GetSentAt()),
+		FromBot: false,
+		Message: newMessage.GetMessage(),
 	}
 }
 func (a *Implementation) SendMessage(ctx context.Context, request *pb.SendMessageRequest) (*pb.SendMessageResponse, error) {
@@ -206,7 +214,7 @@ func (a *Implementation) SendMessage(ctx context.Context, request *pb.SendMessag
 		return nil, err
 	}
 
-	err = a.useCase.SendMessage(ctx, decodeSendMessageRequest(request))
+	err = a.useCase.SendMessage(ctx, decodeSendMessageRequest(request.GetChatId(), request.GetMsg()))
 	if err != nil {
 		if errValidation := new(model.ValidationError); errors.As(err, &errValidation) {
 			return nil, errValidation.WithDetails(codes.InvalidArgument)

@@ -35,6 +35,21 @@ paths:
             tags:
                 - Authorization
             operationId: Authorization_BeginConversation
+            parameters:
+                - name: chatId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: msg.message
+                  in: query
+                  schema:
+                    type: string
+                - name: msg.sentAt
+                  in: query
+                  schema:
+                    type: string
+                    format: date-time
             responses:
                 "200":
                     description: OK
@@ -262,19 +277,22 @@ components:
                 sentAt:
                     type: string
                     format: date-time
-        SendMessageRequest:
+        NewMessage:
             type: object
             properties:
                 message:
                     type: string
-                chatId:
-                    type: integer
-                    format: uint32
                 sentAt:
                     type: string
                     format: date-time
-                fromBot:
-                    type: boolean
+        SendMessageRequest:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
+                msg:
+                    $ref: '#/components/schemas/NewMessage'
         SendMessageResponse:
             type: object
             properties: {}

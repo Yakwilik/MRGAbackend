@@ -7,8 +7,31 @@ import (
 	"google.golang.org/grpc/metadata"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
+
+var secure = false
+var samesiteMode http.SameSite = http.SameSiteLaxMode
+
+func init() {
+	sec, ok := os.LookupEnv("COOKIE_SECURE")
+	switch {
+	case !ok || sec == "false":
+		secure = false
+	default:
+		secure = true
+	}
+
+	samesite, ok := os.LookupEnv("SAME_SITE_NONE")
+	switch {
+	case !ok || samesite == "false":
+		samesiteMode = http.SameSiteLaxMode
+	default:
+		samesiteMode = http.SameSiteNoneMode
+	}
+
+}
 
 const sessionKey = "session_id"
 
@@ -34,9 +57,9 @@ func SetSessionID(ctx context.Context, sessionID string) {
 		Value:    sessionID,
 		Path:     "/",
 		Expires:  time.Now().Add(time.Hour * 24),
-		Secure:   true,
+		Secure:   secure,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: samesiteMode,
 	}
 
 	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{
