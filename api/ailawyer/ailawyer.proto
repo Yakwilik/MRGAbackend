@@ -131,8 +131,7 @@ message SendMessageResponse{
 }
 
 message BeginConversationRequest {
-  uint32 chat_id = 1;
-  NewMessage msg = 2;
+  NewMessage msg = 1;
 }
 
 message BeginConversationResponse{

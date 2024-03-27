@@ -129,7 +129,7 @@ func (a *Implementation) BeginConversation(ctx context.Context, request *pb.Begi
 		return nil, status.New(codes.Internal, err.Error()).Err()
 	}
 
-	err = a.useCase.SendMessage(ctx, decodeSendMessageRequest(request.GetChatId(), request.GetMsg()))
+	err = a.useCase.SendMessage(ctx, decodeSendMessageRequest(chatID, request.GetMsg()))
 	if err != nil {
 		if errValidation := new(model.ValidationError); errors.As(err, &errValidation) {
 			return nil, errValidation.WithDetails(codes.InvalidArgument)

@@ -199,9 +199,6 @@ components:
         BeginConversationRequest:
             type: object
             properties:
-                chatId:
-                    type: integer
-                    format: uint32
                 msg:
                     $ref: '#/components/schemas/NewMessage'
         BeginConversationResponse:
