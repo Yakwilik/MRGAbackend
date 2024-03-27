@@ -35,21 +35,12 @@ paths:
             tags:
                 - Authorization
             operationId: Authorization_BeginConversation
-            parameters:
-                - name: chatId
-                  in: query
-                  schema:
-                    type: integer
-                    format: uint32
-                - name: msg.message
-                  in: query
-                  schema:
-                    type: string
-                - name: msg.sentAt
-                  in: query
-                  schema:
-                    type: string
-                    format: date-time
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/BeginConversationRequest'
+                required: true
             responses:
                 "200":
                     description: OK
@@ -205,6 +196,14 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        BeginConversationRequest:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
+                msg:
+                    $ref: '#/components/schemas/NewMessage'
         BeginConversationResponse:
             type: object
             properties:

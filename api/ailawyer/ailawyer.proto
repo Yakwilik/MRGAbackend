@@ -92,6 +92,7 @@ service Authorization{
   rpc BeginConversation(BeginConversationRequest) returns (BeginConversationResponse) {
     option(google.api.http) = {
       post: "/v1/chat/begin"
+      body: "*"
     };
   }
 
