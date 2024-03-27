@@ -6,7 +6,7 @@ info:
     title: Speranskiy
     version: "1.0"
 servers:
-    - url: '{scheme}://{host}:{port}'
+    - url: '{scheme}://{host}:{port}/{base_url}'
       variables:
         port:
             enum:
@@ -21,11 +21,107 @@ servers:
             default: http
         host:
             enum:
-                - localhost/api
-                - 194.61.3.193/api
-                - meetme-app.ru/api
+                - localhost
+                - 194.61.3.193
+                - meetme-app.ru
             default: localhost
+        base_url:
+            enum:
+                - api/gateway
+            default: api/gateway
 paths:
+    /v1/chat/begin:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_BeginConversation
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BeginConversationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/chats:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_GetConversations
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetConversationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/chats/{chatId}/send:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_SendMessage
+            parameters:
+                - name: chatId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SendMessageResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/chats/{id}:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_GetConversation
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetConversationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/check_login:
         get:
             tags:
@@ -94,6 +190,12 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
+        BeginConversationResponse:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
         CheckLoginResponse:
             type: object
             properties:
@@ -102,6 +204,33 @@ components:
                 email:
                     type: string
             description: Данные для ответа на запрос проверки авторизации пользователя
+        Conversation:
+            type: object
+            properties:
+                lastMessage:
+                    type: string
+                fromChatbot:
+                    type: boolean
+                sentAt:
+                    type: string
+                    format: date-time
+                chatId:
+                    type: integer
+                    format: uint32
+        GetConversationResponse:
+            type: object
+            properties:
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Message'
+        GetConversationsResponse:
+            type: object
+            properties:
+                conversations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Conversation'
         GoogleProtobufAny:
             type: object
             properties:
@@ -119,6 +248,32 @@ components:
                     type: string
             description: Данные для запроса авторизации пользователя
         LoginResponse:
+            type: object
+            properties: {}
+        Message:
+            type: object
+            properties:
+                message:
+                    type: string
+                fromChatbot:
+                    type: boolean
+                sentAt:
+                    type: string
+                    format: date-time
+        SendMessageRequest:
+            type: object
+            properties:
+                message:
+                    type: string
+                chatId:
+                    type: integer
+                    format: uint32
+                sentAt:
+                    type: string
+                    format: date-time
+                fromBot:
+                    type: boolean
+        SendMessageResponse:
             type: object
             properties: {}
         SignUPRequest:

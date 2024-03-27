@@ -20,3 +20,12 @@ spec:
           ports:
             - containerPort: 7001
             - containerPort: 7002
+          envFrom:
+          - configMapRef:
+              name: db-config
+          env:
+          - name: DBPassword
+            valueFrom:
+              secretKeyRef:
+                name: db-password-secret
+                key: DBPassword

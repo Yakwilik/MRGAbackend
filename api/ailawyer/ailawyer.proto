@@ -5,6 +5,7 @@ package mrga.authorization;
 option go_package="mrga/service/authorization";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
 import "gnostic/openapi/v3/openapiv3.proto";
@@ -17,7 +18,7 @@ option (gnostic.openapi.v3.document) = {
   };
   servers: [
     {
-      url: "{scheme}://{host}:{port}";
+      url: "{scheme}://{host}:{port}/{base_url}";
       variables: {
         additional_properties :[
         {
@@ -45,11 +46,20 @@ option (gnostic.openapi.v3.document) = {
           name: "host";
           value: {
             enum: [
-              "localhost/api",
-              "194.61.3.193/api",
-              "meetme-app.ru/api"
+              "localhost",
+              "194.61.3.193",
+              "meetme-app.ru"
             ];
             default: "localhost";
+          };
+        },
+        {
+          name: "base_url";
+          value: {
+            enum: [
+              "api/gateway"
+            ];
+            default: "api/gateway";
           };
         }
       ];
@@ -78,7 +88,81 @@ service Authorization{
       get: "/v1/check_login"
     };
   }
+
+  rpc BeginConversation(BeginConversationRequest) returns (BeginConversationResponse) {
+    option(google.api.http) = {
+      post: "/v1/chat/begin"
+    };
+  }
+
+  rpc GetConversations(GetConversationsRequest) returns (GetConversationsResponse) {
+    option(google.api.http) = {
+      get: "/v1/chats"
+    };
+  }
+
+  rpc GetConversation(GetConversationRequest) returns (GetConversationResponse) {
+    option(google.api.http) = {
+      get: "/v1/chats/{id}"
+    };
+  }
+
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse){
+    option(google.api.http) = {
+      post: "/v1/chats/{chat_id}/send"
+      body: "*"
+    };
+  }
 }
+
+message SendMessageRequest{
+  string message = 1;
+  uint32 chat_id = 2;
+  google.protobuf.Timestamp sent_at = 3;
+  bool from_bot = 4;
+}
+
+message SendMessageResponse{
+
+}
+
+message BeginConversationRequest {
+}
+
+message BeginConversationResponse{
+  uint32 chat_id = 1;
+}
+
+message GetConversationsRequest{
+
+}
+
+message Conversation {
+  string last_message = 1;
+  bool from_chatbot = 2;
+  google.protobuf.Timestamp sent_at = 3;
+  uint32 chat_id = 4;
+}
+
+message GetConversationsResponse{
+  repeated Conversation conversations = 1;
+}
+
+message Message {
+  string message = 1;
+  bool from_chatbot = 2;
+  google.protobuf.Timestamp sent_at = 3;
+}
+
+message GetConversationRequest{
+  uint32 id = 1;
+}
+
+message GetConversationResponse{
+  repeated Message messages = 1;
+}
+
+
 
 // Данные для запроса регистрации пользователя
 message SignUPRequest {

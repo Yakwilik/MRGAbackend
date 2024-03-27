@@ -8,12 +8,6 @@ GO ?= go
 # Директория для генерации кода
 GEN_DIR=$(PWD)/internal/pb
 
-# Директория с внешними контрактами
-VENDOR_PROTO_FILES_DIR=$(PWD)/vendor.protogen
-
-# Директория с внутренними контрактами
-PROTO_FILES_DIR=$(PWD)/api
-
 # Зависимости для установки
 DEPENDENCIES = google.golang.org/protobuf/cmd/protoc-gen-go \
                google.golang.org/grpc/cmd/protoc-gen-go-grpc \
@@ -47,3 +41,13 @@ build-image:
 
 run-in-container:
 	 docker run -p 7001:7001 -p 7002:7002 myapp
+
+
+PG_PASSWORD=qwerty
+.PHONY: migrate
+migrate:
+	goose -dir migrations postgres "user=postgres password=${PG_PASSWORD} dbname=postgres host=localhost port=5432 sslmode=disable" up
+
+.PHONY: templ
+templ:
+	templ generate ./internal/...
