@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
-	"github.com/Yakwilik/MRGAbackend/internal/storage"
+	storagePkg "github.com/Yakwilik/MRGAbackend/internal/storage"
 	"strings"
 )
 
@@ -19,10 +19,10 @@ type UseCase interface {
 }
 
 type usecase struct {
-	storage storage.Interface
+	storage storagePkg.Interface
 }
 
-func New(session storage.Interface) UseCase {
+func New(session storagePkg.Interface) UseCase {
 	return &usecase{storage: session}
 }
 

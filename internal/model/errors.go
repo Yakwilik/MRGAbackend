@@ -42,3 +42,7 @@ func (v *ValidationError) WithDetails(code codes.Code) error {
 
 	return statusWithDetails.Err()
 }
+
+func WrapErrorWithMethodName(err error, msg string) error {
+	return fmt.Errorf("error calling %s: %w", msg, err)
+}
