@@ -212,6 +212,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/suggest_redirect:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_SendRedirectSuggest
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendRedirectSuggestRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SendRedirectSuggestResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         BeginConversationRequest:
@@ -340,6 +364,19 @@ components:
                 msg:
                     $ref: '#/components/schemas/NewMessage'
         SendMessageResponse:
+            type: object
+            properties: {}
+        SendRedirectSuggestRequest:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
+                action:
+                    type: string
+                documentId:
+                    type: string
+        SendRedirectSuggestResponse:
             type: object
             properties: {}
         SignUPRequest:

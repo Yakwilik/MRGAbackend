@@ -73,3 +73,7 @@ func (a *Implementation) GetDocumentCategories(ctx context.Context, request *pb.
 
 	return &pb.GetCategoriesResponse{Categories: categories}, nil
 }
+
+func (a *Implementation) SendRedirectSuggest(ctx context.Context, request *pb.SendRedirectSuggestRequest) (*pb.SendRedirectSuggestResponse, error) {
+	return &pb.SendRedirectSuggestResponse{}, nil
+}

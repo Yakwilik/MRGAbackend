@@ -27,6 +27,7 @@ const (
 	Authorization_GetConversation_FullMethodName       = "/mrga.authorization.Authorization/GetConversation"
 	Authorization_SendMessage_FullMethodName           = "/mrga.authorization.Authorization/SendMessage"
 	Authorization_GetDocumentCategories_FullMethodName = "/mrga.authorization.Authorization/GetDocumentCategories"
+	Authorization_SendRedirectSuggest_FullMethodName   = "/mrga.authorization.Authorization/SendRedirectSuggest"
 )
 
 // AuthorizationClient is the client API for Authorization service.
@@ -41,6 +42,7 @@ type AuthorizationClient interface {
 	GetConversation(ctx context.Context, in *GetConversationRequest, opts ...grpc.CallOption) (*GetConversationResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
 	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
+	SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error)
 }
 
 type authorizationClient struct {
@@ -123,6 +125,15 @@ func (c *authorizationClient) GetDocumentCategories(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *authorizationClient) SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error) {
+	out := new(SendRedirectSuggestResponse)
+	err := c.cc.Invoke(ctx, Authorization_SendRedirectSuggest_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthorizationServer is the server API for Authorization service.
 // All implementations must embed UnimplementedAuthorizationServer
 // for forward compatibility
@@ -135,6 +146,7 @@ type AuthorizationServer interface {
 	GetConversation(context.Context, *GetConversationRequest) (*GetConversationResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
+	SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error)
 	mustEmbedUnimplementedAuthorizationServer()
 }
 
@@ -165,6 +177,9 @@ func (UnimplementedAuthorizationServer) SendMessage(context.Context, *SendMessag
 }
 func (UnimplementedAuthorizationServer) GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentCategories not implemented")
+}
+func (UnimplementedAuthorizationServer) SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendRedirectSuggest not implemented")
 }
 func (UnimplementedAuthorizationServer) mustEmbedUnimplementedAuthorizationServer() {}
 
@@ -323,6 +338,24 @@ func _Authorization_GetDocumentCategories_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Authorization_SendRedirectSuggest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendRedirectSuggestRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServer).SendRedirectSuggest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Authorization_SendRedirectSuggest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServer).SendRedirectSuggest(ctx, req.(*SendRedirectSuggestRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Authorization_ServiceDesc is the grpc.ServiceDesc for Authorization service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -361,6 +394,10 @@ var Authorization_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDocumentCategories",
 			Handler:    _Authorization_GetDocumentCategories_Handler,
+		},
+		{
+			MethodName: "SendRedirectSuggest",
+			Handler:    _Authorization_SendRedirectSuggest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

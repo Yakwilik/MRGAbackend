@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	"log"
 	"net/http"
-	"os"
 )
 
 type client interface {
@@ -37,7 +38,7 @@ type clientImpl struct {
 }
 
 func newClient(serverHost string) client {
-	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: os.Getenv("x-app-bot-auth-token")}
+	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: "fjasdkfjhskajfhaj"}
 }
 
 func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptModel) (response, error) {
@@ -47,7 +48,7 @@ func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptMod
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
 
-	req, err := http.NewRequest("POST", c.serverHost, bytes.NewBuffer(bodyBytes))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/query", c.serverHost), bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
@@ -57,8 +58,13 @@ func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptMod
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
+	//respLog, _ := json.Marshal(resp)
 
+	log.Println("statusCode: ", resp.StatusCode, "err:", err)
 	decodedResp := response{}
+	if resp.StatusCode == http.StatusForbidden {
+		return response{}, errors.New("forbidden")
+	}
 	err = json.NewDecoder(resp.Body).Decode(&decodedResp)
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")

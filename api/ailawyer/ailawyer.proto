@@ -120,7 +120,22 @@ service Authorization{
       get: "/v1/documents/categories"
     };
   }
+
+  rpc SendRedirectSuggest(SendRedirectSuggestRequest) returns (SendRedirectSuggestResponse) {
+    option(google.api.http) = {
+      post: "/v1/suggest_redirect"
+      body: "*"
+    };
+  }
 }
+
+message SendRedirectSuggestRequest{
+  uint32 chat_id = 1;
+  string action = 2;
+  string document_id = 3;
+}
+
+message SendRedirectSuggestResponse{}
 
 message GetCategoriesRequest {}
 
@@ -131,7 +146,6 @@ message GetCategoriesResponse {
 message DocumentCategory {
   string categoryName = 1;
   repeated DocumentType documentTypes = 2;
-
 }
 
 message DocumentType {
