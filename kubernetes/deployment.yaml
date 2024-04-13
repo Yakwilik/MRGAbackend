@@ -29,3 +29,8 @@ spec:
               secretKeyRef:
                 name: db-password-secret
                 key: DBPassword
+          - name: x-app-bot-auth-token
+            valueFrom:
+              secretKeyRef:
+                key: x-app-bot-auth-token
+                name: bot-api-token

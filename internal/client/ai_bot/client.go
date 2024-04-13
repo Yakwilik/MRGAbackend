@@ -1,13 +1,13 @@
 package ai_bot
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	"log"
 	"net/http"
-	"strings"
+	"os"
 )
 
 type client interface {
@@ -31,12 +31,13 @@ type response struct {
 }
 
 type clientImpl struct {
-	serverHost string
-	client     *http.Client
+	serverHost  string
+	clientToken string
+	client      *http.Client
 }
 
 func newClient(serverHost string) client {
-	return &clientImpl{serverHost: serverHost, client: &http.Client{}}
+	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: os.Getenv("x-app-bot-auth-token")}
 }
 
 func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptModel) (response, error) {
@@ -45,7 +46,14 @@ func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptMod
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
-	resp, err := c.client.Post(fmt.Sprintf("%s/query", c.serverHost), "application/json", strings.NewReader(string(bodyBytes)))
+
+	req, err := http.NewRequest("POST", c.serverHost, bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
+	}
+
+	req.Header.Set("x-app-bot-auth-token", c.clientToken)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
