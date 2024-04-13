@@ -19,13 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Authorization_SignUPV1_FullMethodName          = "/mrga.authorization.Authorization/SignUPV1"
-	Authorization_Login_FullMethodName             = "/mrga.authorization.Authorization/Login"
-	Authorization_CheckLogin_FullMethodName        = "/mrga.authorization.Authorization/CheckLogin"
-	Authorization_BeginConversation_FullMethodName = "/mrga.authorization.Authorization/BeginConversation"
-	Authorization_GetConversations_FullMethodName  = "/mrga.authorization.Authorization/GetConversations"
-	Authorization_GetConversation_FullMethodName   = "/mrga.authorization.Authorization/GetConversation"
-	Authorization_SendMessage_FullMethodName       = "/mrga.authorization.Authorization/SendMessage"
+	Authorization_SignUPV1_FullMethodName              = "/mrga.authorization.Authorization/SignUPV1"
+	Authorization_Login_FullMethodName                 = "/mrga.authorization.Authorization/Login"
+	Authorization_CheckLogin_FullMethodName            = "/mrga.authorization.Authorization/CheckLogin"
+	Authorization_BeginConversation_FullMethodName     = "/mrga.authorization.Authorization/BeginConversation"
+	Authorization_GetConversations_FullMethodName      = "/mrga.authorization.Authorization/GetConversations"
+	Authorization_GetConversation_FullMethodName       = "/mrga.authorization.Authorization/GetConversation"
+	Authorization_SendMessage_FullMethodName           = "/mrga.authorization.Authorization/SendMessage"
+	Authorization_GetDocumentCategories_FullMethodName = "/mrga.authorization.Authorization/GetDocumentCategories"
 )
 
 // AuthorizationClient is the client API for Authorization service.
@@ -39,6 +40,7 @@ type AuthorizationClient interface {
 	GetConversations(ctx context.Context, in *GetConversationsRequest, opts ...grpc.CallOption) (*GetConversationsResponse, error)
 	GetConversation(ctx context.Context, in *GetConversationRequest, opts ...grpc.CallOption) (*GetConversationResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
+	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 }
 
 type authorizationClient struct {
@@ -112,6 +114,15 @@ func (c *authorizationClient) SendMessage(ctx context.Context, in *SendMessageRe
 	return out, nil
 }
 
+func (c *authorizationClient) GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error) {
+	out := new(GetCategoriesResponse)
+	err := c.cc.Invoke(ctx, Authorization_GetDocumentCategories_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthorizationServer is the server API for Authorization service.
 // All implementations must embed UnimplementedAuthorizationServer
 // for forward compatibility
@@ -123,6 +134,7 @@ type AuthorizationServer interface {
 	GetConversations(context.Context, *GetConversationsRequest) (*GetConversationsResponse, error)
 	GetConversation(context.Context, *GetConversationRequest) (*GetConversationResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
+	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
 	mustEmbedUnimplementedAuthorizationServer()
 }
 
@@ -150,6 +162,9 @@ func (UnimplementedAuthorizationServer) GetConversation(context.Context, *GetCon
 }
 func (UnimplementedAuthorizationServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedAuthorizationServer) GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentCategories not implemented")
 }
 func (UnimplementedAuthorizationServer) mustEmbedUnimplementedAuthorizationServer() {}
 
@@ -290,6 +305,24 @@ func _Authorization_SendMessage_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Authorization_GetDocumentCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCategoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServer).GetDocumentCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Authorization_GetDocumentCategories_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServer).GetDocumentCategories(ctx, req.(*GetCategoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Authorization_ServiceDesc is the grpc.ServiceDesc for Authorization service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -324,6 +357,10 @@ var Authorization_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendMessage",
 			Handler:    _Authorization_SendMessage_Handler,
+		},
+		{
+			MethodName: "GetDocumentCategories",
+			Handler:    _Authorization_GetDocumentCategories_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

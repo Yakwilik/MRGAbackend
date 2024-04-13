@@ -114,6 +114,34 @@ service Authorization{
       body: "*"
     };
   }
+
+  rpc GetDocumentCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
+    option(google.api.http) = {
+      get: "/v1/documents/categories"
+    };
+  }
+}
+
+message GetCategoriesRequest {}
+
+message GetCategoriesResponse {
+  repeated DocumentCategory categories = 1;
+}
+
+message DocumentCategory {
+  string categoryName = 1;
+  repeated DocumentType documentTypes = 2;
+
+}
+
+message DocumentType {
+  string type = 1;
+  repeated DocumentVariant variants = 2;
+}
+
+message DocumentVariant {
+  string key = 1;
+  string name = 2;
 }
 
 message NewMessage {

@@ -146,6 +146,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/documents/categories:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_GetDocumentCategories
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetCategoriesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/login:
         post:
             tags:
@@ -228,6 +246,38 @@ components:
                 chatId:
                     type: integer
                     format: uint32
+        DocumentCategory:
+            type: object
+            properties:
+                categoryName:
+                    type: string
+                documentTypes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentType'
+        DocumentType:
+            type: object
+            properties:
+                type:
+                    type: string
+                variants:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentVariant'
+        DocumentVariant:
+            type: object
+            properties:
+                key:
+                    type: string
+                name:
+                    type: string
+        GetCategoriesResponse:
+            type: object
+            properties:
+                categories:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentCategory'
         GetConversationResponse:
             type: object
             properties:
