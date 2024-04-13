@@ -9,23 +9,37 @@ spec:
     - host: meetme-app.ru
       http:
         paths:
-          - path: /
+          - path: /api/
             pathType: Prefix
             backend:
               service:
                 name: speranskiy-backend-service
                 port:
                   number: 7001
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: speranskiy-frontend-service
+                port:
+                  number: 90
     - host: khasbulat.ru
       http:
         paths:
-          - path: /
+          - path: /api/
             pathType: Prefix
             backend:
               service:
                 name: speranskiy-backend-service
                 port:
                   number: 7001
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: speranskiy-frontend-service
+                port:
+                  number: 90
   tls:
     - hosts:
         - meetme-app.ru
