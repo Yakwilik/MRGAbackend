@@ -9,6 +9,7 @@ import (
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	"log"
 	"net/http"
+	"os"
 )
 
 type client interface {
@@ -16,8 +17,8 @@ type client interface {
 }
 
 type promptModel struct {
-	UserID      string           `json:"user_id"`
-	ChatID      string           `json:"chat_id"`
+	UserID      uint32           `json:"user_id"`
+	ChatID      uint32           `json:"chat_id"`
 	UserQuery   string           `json:"user_query"`
 	ChatHistory []historyMessage `json:"chat_history"`
 }
@@ -26,8 +27,8 @@ type historyMessage struct {
 	Text string `json:"text"`
 }
 type response struct {
-	UserId string `json:"user_id"`
-	ChatId string `json:"chat_id"`
+	UserId uint32 `json:"user_id"`
+	ChatId uint32 `json:"chat_id"`
 	Output string `json:"output"`
 }
 
@@ -38,7 +39,7 @@ type clientImpl struct {
 }
 
 func newClient(serverHost string) client {
-	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: "fjasdkfjhskajfhaj"}
+	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: os.Getenv("x-app-bot-auth-token")}
 }
 
 func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptModel) (response, error) {

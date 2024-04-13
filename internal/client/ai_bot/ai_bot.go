@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/Yakwilik/MRGAbackend/internal/core"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
-	"log"
-	"strconv"
 )
 
 type Interface interface {
@@ -24,15 +22,14 @@ func New(useCase core.UseCase, serverHost string) Interface {
 
 func (a *adapter) GetPromptAnswer(ctx context.Context, prompt string) (string, error) {
 	resp, err := a.client.SendPromptWithContext(ctx, promptModel{
-		UserID:      "0",
-		ChatID:      "0",
+		UserID:      0,
+		ChatID:      0,
 		UserQuery:   prompt,
 		ChatHistory: []historyMessage{},
 	})
 	if err != nil {
 		return "", err
 	}
-	log.Printf("error sending answer to DB: %v", resp)
 	return resp.Output, nil
 }
 
@@ -43,8 +40,8 @@ func (a *adapter) GetPromptAnswerWithChatHistory(ctx context.Context, chatID uin
 	}
 	prompt, history := encodeMessagesToPromptAndHistory(messages)
 	resp, err := a.client.SendPromptWithContext(ctx, promptModel{
-		UserID:      "0",
-		ChatID:      strconv.FormatUint(uint64(chatID), 10),
+		UserID:      0,
+		ChatID:      chatID,
 		UserQuery:   prompt,
 		ChatHistory: history,
 	})
