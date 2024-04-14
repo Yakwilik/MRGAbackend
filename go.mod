@@ -4,8 +4,10 @@ go 1.22.0
 
 require (
 	github.com/a-h/templ v0.2.598
+	github.com/blockloop/scan v1.3.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/gnostic v0.7.0
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/lib/pq v1.10.9
 	github.com/stretchr/testify v1.9.0
@@ -16,10 +18,8 @@ require (
 )
 
 require (
-	github.com/blockloop/scan v1.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/gnostic-models v0.6.9-0.20230804172637-c7be7c783f49 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
