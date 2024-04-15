@@ -76,7 +76,15 @@ func InitApp(opts ...Option) (*App, error) {
 		opts: o,
 		wg:   &sync.WaitGroup{},
 	}
-	logger.InitLogger(os.Getenv("LOGGER_ADDR"))
+	environment, ok := os.LookupEnv("ENV")
+
+	switch {
+	case environment == "prod":
+		logger.InitLogger(os.Getenv("LOGGER_ADDR"))
+	case environment == "dev":
+	case !ok:
+		environment = "dev"
+	}
 
 	lst, err := newListeners(a.opts)
 	if err != nil {

@@ -39,7 +39,7 @@ type clientImpl struct {
 }
 
 func newClient(serverHost string) client {
-	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: os.Getenv("x-app-bot-auth-token")}
+	return &clientImpl{serverHost: serverHost, client: &http.Client{}, clientToken: os.Getenv("X_APP_BOT_AUTH_TOKEN")}
 }
 
 func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptModel) (response, error) {
