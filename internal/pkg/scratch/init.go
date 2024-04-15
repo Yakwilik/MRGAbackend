@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Yakwilik/MRGAbackend/internal/app/rest"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 )
@@ -74,6 +76,7 @@ func InitApp(opts ...Option) (*App, error) {
 		opts: o,
 		wg:   &sync.WaitGroup{},
 	}
+	logger.InitLogger(os.Getenv("LOGGER_ADDR"))
 
 	lst, err := newListeners(a.opts)
 	if err != nil {

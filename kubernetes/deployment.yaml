@@ -22,7 +22,7 @@ spec:
             - containerPort: 7002
           envFrom:
           - configMapRef:
-              name: db-config
+              name: backend-config
           env:
           - name: DBPassword
             valueFrom:
