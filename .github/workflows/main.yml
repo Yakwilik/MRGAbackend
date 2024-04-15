@@ -36,7 +36,6 @@ jobs:
         with:
           context: .
           file: ${{ github.workspace }}/build/Dockerfile
-          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:latest
