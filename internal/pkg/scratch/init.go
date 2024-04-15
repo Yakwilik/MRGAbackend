@@ -79,12 +79,12 @@ func InitApp(opts ...Option) (*App, error) {
 	environment, ok := os.LookupEnv("ENV")
 
 	switch {
-	case environment == "prod":
-		logger.InitLogger(os.Getenv("LOGGER_ADDR"))
 	case environment == "dev":
 	case !ok:
 		environment = "dev"
 	}
+
+	logger.InitLogger(os.Getenv("LOGGER_ADDR"), environment)
 
 	lst, err := newListeners(a.opts)
 	if err != nil {
@@ -148,7 +148,7 @@ func (a *App) initGRPCServer(desc ServiceDesc) {
 		return
 	}
 
-	a.grpcServer = grpc.NewServer()
+	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(logInterceptor))
 
 	desc.RegisterGRPC(a.grpcServer)
 	reflection.Register(a.grpcServer)

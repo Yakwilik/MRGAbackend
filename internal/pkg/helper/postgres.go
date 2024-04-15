@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"log/slog"
 )
 
 type PGConfig struct {
@@ -27,5 +28,6 @@ func NewPostgresDB(cfg PGConfig) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("connected to postgres")
 	return db, nil
 }

@@ -1,8 +1,12 @@
 package scratch
 
 import (
+	"context"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc"
+	"log"
+	"log/slog"
 )
 
 var (
@@ -44,4 +48,22 @@ func evaluateOptions(opts []Option) (*Options, error) {
 	}
 
 	return oo, nil
+}
+
+// logInterceptor это UnaryInterceptor который логгирует детали запроса и ответа.
+func logInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	// Логгирование начала обработки запроса
+	log.Printf("Received request: %v", req)
+
+	// Обработка запроса
+	resp, err := handler(ctx, req)
+
+	// Логгирование ответа
+	if err != nil {
+		slog.Error("Request completed with error: %v", err)
+	} else {
+		slog.Info("Request completed successfully, response: %v", resp)
+	}
+
+	return resp, err
 }

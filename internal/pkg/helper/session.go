@@ -2,10 +2,9 @@ package helper
 
 import (
 	"context"
-	"errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -42,9 +41,7 @@ func SessionIDFromContextMD(ctx context.Context) (string, bool) {
 	request := http.Request{Header: http.Header{"Cookie": cookie}}
 	sessionCookie, err := request.Cookie(sessionKey)
 	if err != nil {
-		if !errors.Is(err, http.ErrNoCookie) {
-			log.Println(err)
-		}
+		slog.Error(err.Error())
 		return "", false
 	}
 

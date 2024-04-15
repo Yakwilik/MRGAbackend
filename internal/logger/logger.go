@@ -4,24 +4,25 @@ import (
 	"gopkg.in/Graylog2/go-gelf.v2/gelf"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 )
 
-type proxyWriter struct {
-	writer io.Writer
-}
-
-func (w *proxyWriter) Write(p []byte) (n int, err error) {
-	os.Stdout.Write(p)
-
-	return w.writer.Write(p)
-}
-
-func InitLogger(outputAddr string) {
-	writer, err := gelf.NewTCPWriter(outputAddr)
-	if err != nil {
-		log.Fatal(err)
+func InitLogger(outputAddr string, environment string) {
+	writers := []io.Writer{os.Stdout}
+	log.Printf("environment: %s", environment)
+	if environment == "prod" {
+		writer, err := gelf.NewTCPWriter(outputAddr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		writers = append(writers, writer)
 	}
+	handler := slog.NewJSONHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
+		AddSource:   true,
+		ReplaceAttr: nil,
+	})
 
-	log.SetOutput(&proxyWriter{writer: writer})
+	slog.SetDefault(slog.New(handler))
+	log.Printf("Logger initialized with writers: %+v", writers)
 }
