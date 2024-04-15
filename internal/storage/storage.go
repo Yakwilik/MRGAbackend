@@ -175,7 +175,7 @@ SELECT message,
        from_bot
 FROM messages
 WHERE chat_id = $1
-ORDER BY sent_at DESC;`, chatID)
+ORDER BY sent_at ASC;`, chatID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

@@ -53,10 +53,11 @@ func (a *adapter) GetPromptAnswerWithChatHistory(ctx context.Context, chatID uin
 }
 
 func encodeMessagesToPromptAndHistory(messages []model.Message) (string, []historyMessage) {
+	lastMessageID := len(messages) - 1
 	historyMessages := make([]historyMessage, 0, len(messages)-1)
 	prompt := ""
 	for index, message := range messages {
-		if index == 0 {
+		if index == lastMessageID {
 			prompt = message.Message
 		} else {
 			historyMessages = append(historyMessages, historyMessage{
