@@ -4,6 +4,7 @@ metadata:
   name: speranskiy-backend-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
     - host: meetme-app.ru
@@ -23,6 +24,13 @@ spec:
                 name: speranskiy-frontend-service
                 port:
                   number: 90
+          - path: /graylog(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: graylog-external-service
+                port:
+                  number: 9000
     - host: khasbulat.ru
       http:
         paths:
