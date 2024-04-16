@@ -1,0 +1,243 @@
+syntax = "proto3";
+
+package mrga.authorization;
+
+option go_package="mrga/service/authorization";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+import "gnostic/openapi/v3/openapiv3.proto";
+import "gnostic/openapi/v3/annotations.proto";
+
+option (gnostic.openapi.v3.document) = {
+  info: {
+    title: "Speranskiy";
+    version: "1.0";
+  };
+  servers: [
+    {
+      url: "{scheme}://{host}:{port}/{base_url}";
+      variables: {
+        additional_properties :[
+        {
+          name: "port";
+          value: {
+            enum: [
+              "80",
+              "7001",
+              "443"
+            ];
+            default: "7001";
+          };
+        },
+        {
+          name: "scheme";
+          value: {
+            enum: [
+              "http",
+              "https"
+            ];
+            default: "http";
+          };
+        },
+        {
+          name: "host";
+          value: {
+            enum: [
+              "localhost",
+              "194.61.3.193",
+              "meetme-app.ru"
+            ];
+            default: "localhost";
+          };
+        },
+        {
+          name: "base_url";
+          value: {
+            enum: [
+              "api/gateway"
+            ];
+            default: "api/gateway";
+          };
+        }
+      ];
+    };
+    }
+  ];
+};
+
+service Authorization{
+  rpc SignUPV1 (SignUPRequest) returns (SignUPResponse){
+    option (google.api.http) = {
+      post: "/v1/sign_up"
+      body: "*"
+    };
+  }
+
+  rpc Login (LoginRequest) returns (LoginResponse){
+    option(google.api.http) = {
+      post: "/v1/login"
+      body: "*"
+    };
+  }
+
+  rpc CheckLogin (CheckLoginRequest) returns (CheckLoginResponse){
+    option(google.api.http) = {
+      get: "/v1/check_login"
+    };
+  }
+
+  rpc BeginConversation(BeginConversationRequest) returns (BeginConversationResponse) {
+    option(google.api.http) = {
+      post: "/v1/chat/begin"
+      body: "*"
+    };
+  }
+
+  rpc GetConversations(GetConversationsRequest) returns (GetConversationsResponse) {
+    option(google.api.http) = {
+      get: "/v1/chats"
+    };
+  }
+
+  rpc GetConversation(GetConversationRequest) returns (GetConversationResponse) {
+    option(google.api.http) = {
+      get: "/v1/chats/{id}"
+    };
+  }
+
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse){
+    option(google.api.http) = {
+      post: "/v1/chats/{chat_id}/send"
+      body: "*"
+    };
+  }
+
+  rpc GetDocumentCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
+    option(google.api.http) = {
+      get: "/v1/documents/categories"
+    };
+  }
+
+  rpc SendRedirectSuggest(SendRedirectSuggestRequest) returns (SendRedirectSuggestResponse) {
+    option(google.api.http) = {
+      post: "/v1/suggest_redirect"
+      body: "*"
+    };
+  }
+}
+
+message SendRedirectSuggestRequest{
+  uint32 chat_id = 1;
+  string action = 2;
+  string document_id = 3;
+}
+
+message SendRedirectSuggestResponse{}
+
+message GetCategoriesRequest {}
+
+message GetCategoriesResponse {
+  repeated DocumentCategory categories = 1;
+}
+
+message DocumentCategory {
+  string categoryName = 1;
+  repeated DocumentType documentTypes = 2;
+}
+
+message DocumentType {
+  string type = 1;
+  repeated DocumentVariant variants = 2;
+}
+
+message DocumentVariant {
+  string key = 1;
+  string name = 2;
+}
+
+message NewMessage {
+  string message = 1;
+  google.protobuf.Timestamp sent_at = 3;
+}
+
+message SendMessageRequest{
+  uint32 chat_id = 1;
+  NewMessage msg = 2;
+}
+
+message SendMessageResponse{
+
+}
+
+message BeginConversationRequest {
+  NewMessage msg = 1;
+}
+
+message BeginConversationResponse{
+  uint32 chat_id = 1;
+}
+
+message GetConversationsRequest{
+
+}
+
+message Conversation {
+  string last_message = 1;
+  bool from_chatbot = 2;
+  google.protobuf.Timestamp sent_at = 3;
+  uint32 chat_id = 4;
+}
+
+message GetConversationsResponse{
+  repeated Conversation conversations = 1;
+}
+
+message Message {
+  string message = 1;
+  bool from_chatbot = 2;
+  google.protobuf.Timestamp sent_at = 3;
+}
+
+message GetConversationRequest{
+  uint32 id = 1;
+}
+
+message GetConversationResponse{
+  repeated Message messages = 1;
+}
+
+
+
+// Данные для запроса регистрации пользователя
+message SignUPRequest {
+  google.protobuf.StringValue email = 1; // Почта
+  google.protobuf.StringValue password = 2; // Пароль
+}
+
+message SignUPResponse {
+  string email = 1;
+}
+
+// Данные для запроса авторизации пользователя
+message LoginRequest {
+  google.protobuf.StringValue email = 1; // Почта
+  google.protobuf.StringValue password = 2; // Пароль
+}
+
+message LoginResponse {
+  string email = 1;
+}
+
+
+// Данные для запроса проверки авторизации пользователя
+message CheckLoginRequest {
+}
+
+// Данные для ответа на запрос проверки авторизации пользователя
+message CheckLoginResponse {
+  bool is_logged = 1;
+  google.protobuf.StringValue email = 2; // Почта
+}

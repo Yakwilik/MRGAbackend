@@ -1,0 +1,412 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Speranskiy
+    version: "1.0"
+servers:
+    - url: '{scheme}://{host}:{port}/{base_url}'
+      variables:
+        port:
+            enum:
+                - "80"
+                - "7001"
+                - "443"
+            default: "7001"
+        scheme:
+            enum:
+                - http
+                - https
+            default: http
+        host:
+            enum:
+                - localhost
+                - 194.61.3.193
+                - meetme-app.ru
+            default: localhost
+        base_url:
+            enum:
+                - api/gateway
+            default: api/gateway
+paths:
+    /v1/chat/begin:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_BeginConversation
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/BeginConversationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/BeginConversationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/chats:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_GetConversations
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetConversationsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/chats/{chatId}/send:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_SendMessage
+            parameters:
+                - name: chatId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SendMessageResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/chats/{id}:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_GetConversation
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetConversationResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/check_login:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_CheckLogin
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CheckLoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/documents/categories:
+        get:
+            tags:
+                - Authorization
+            operationId: Authorization_GetDocumentCategories
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetCategoriesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/login:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/LoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/sign_up:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_SignUPV1
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SignUPRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SignUPResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/suggest_redirect:
+        post:
+            tags:
+                - Authorization
+            operationId: Authorization_SendRedirectSuggest
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendRedirectSuggestRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SendRedirectSuggestResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        BeginConversationRequest:
+            type: object
+            properties:
+                msg:
+                    $ref: '#/components/schemas/NewMessage'
+        BeginConversationResponse:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
+        CheckLoginResponse:
+            type: object
+            properties:
+                isLogged:
+                    type: boolean
+                email:
+                    type: string
+            description: Данные для ответа на запрос проверки авторизации пользователя
+        Conversation:
+            type: object
+            properties:
+                lastMessage:
+                    type: string
+                fromChatbot:
+                    type: boolean
+                sentAt:
+                    type: string
+                    format: date-time
+                chatId:
+                    type: integer
+                    format: uint32
+        DocumentCategory:
+            type: object
+            properties:
+                categoryName:
+                    type: string
+                documentTypes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentType'
+        DocumentType:
+            type: object
+            properties:
+                type:
+                    type: string
+                variants:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentVariant'
+        DocumentVariant:
+            type: object
+            properties:
+                key:
+                    type: string
+                name:
+                    type: string
+        GetCategoriesResponse:
+            type: object
+            properties:
+                categories:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DocumentCategory'
+        GetConversationResponse:
+            type: object
+            properties:
+                messages:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Message'
+        GetConversationsResponse:
+            type: object
+            properties:
+                conversations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Conversation'
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        LoginRequest:
+            type: object
+            properties:
+                email:
+                    type: string
+                password:
+                    type: string
+            description: Данные для запроса авторизации пользователя
+        LoginResponse:
+            type: object
+            properties:
+                email:
+                    type: string
+        Message:
+            type: object
+            properties:
+                message:
+                    type: string
+                fromChatbot:
+                    type: boolean
+                sentAt:
+                    type: string
+                    format: date-time
+        NewMessage:
+            type: object
+            properties:
+                message:
+                    type: string
+                sentAt:
+                    type: string
+                    format: date-time
+        SendMessageRequest:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
+                msg:
+                    $ref: '#/components/schemas/NewMessage'
+        SendMessageResponse:
+            type: object
+            properties: {}
+        SendRedirectSuggestRequest:
+            type: object
+            properties:
+                chatId:
+                    type: integer
+                    format: uint32
+                action:
+                    type: string
+                documentId:
+                    type: string
+        SendRedirectSuggestResponse:
+            type: object
+            properties: {}
+        SignUPRequest:
+            type: object
+            properties:
+                email:
+                    type: string
+                password:
+                    type: string
+            description: Данные для запроса регистрации пользователя
+        SignUPResponse:
+            type: object
+            properties:
+                email:
+                    type: string
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+tags:
+    - name: Authorization

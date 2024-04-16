@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speranskiy-backend-deployment
+  labels:
+    app: speranskiy-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: speranskiy-backend
+  template:
+    metadata:
+      labels:
+        app: speranskiy-backend
+    spec:
+      containers:
+        - name: speranskiy-backend
+          image: yakwilik/speranskiy_backend
+          ports:
+            - containerPort: 7001
+            - containerPort: 7002
+          envFrom:
+          - configMapRef:
+              name: backend-config
+          env:
+          - name: DBPassword
+            valueFrom:
+              secretKeyRef:
+                name: db-password-secret
+                key: DBPassword
+          - name: X_APP_BOT_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: x-app-bot-auth-token
+                name: bot-api-token
