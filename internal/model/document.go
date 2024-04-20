@@ -1,9 +1,5 @@
 package model
 
-type DocumentPage struct {
-	Content string `json:"content"`
-}
-
 type DocumentField struct {
 	Descr       string   `json:"descr"`
 	IsPrefilled bool     `json:"is_prefilled"`
@@ -21,6 +17,5 @@ type DocumentFieldsBlock struct {
 }
 
 type Document struct {
-	Pages        []DocumentPage        `json:"pages"`
 	FieldsBlocks []DocumentFieldsBlock `json:"fields_blocks"`
 }

@@ -10,3 +10,11 @@ services:
       POSTGRES_PASSWORD: qwerty
     ports:
       - "5432:5432"
+  centrifugo:
+    container_name: centrifugo
+    image: centrifugo/centrifugo:v5
+    volumes:
+      - ./centrifugo.dev.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    ports:
+      - "5050:8000"

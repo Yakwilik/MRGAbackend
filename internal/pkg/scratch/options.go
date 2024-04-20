@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"log/slog"
+	"net/http"
 )
 
 var (
@@ -19,9 +20,12 @@ type Options struct {
 	PortHTTP uint
 	PortGRPC uint
 
-	BindAddress string
-
-	ServeMuxOpts []runtime.ServeMuxOption
+	BindAddress            string
+	PublicHandler          http.Handler
+	EnablePublicHandler    bool
+	ServeMuxOpts           []runtime.ServeMuxOption
+	EnablePublicMiddleware bool
+	PublicMiddleware       func(http.Handler) http.Handler
 }
 
 type Option interface {
@@ -66,4 +70,21 @@ func logInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServer
 	}
 
 	return resp, err
+}
+
+func WithCustomRestHandler(handler http.Handler) Option {
+	return optionFn(func(o *Options) error {
+		o.PublicHandler = handler
+		o.EnablePublicHandler = true
+
+		return nil
+	})
+}
+
+func WithMiddleware(f func(handler http.Handler) http.Handler) Option {
+	return optionFn(func(o *Options) error {
+		o.EnablePublicMiddleware = true
+		o.PublicMiddleware = f
+		return nil
+	})
 }

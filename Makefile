@@ -33,7 +33,7 @@ generate: .install-dependencies
 
 .PHONY: run
 run:
-	go run ./cmd/bff/main.go
+	go run ./cmd/bff/main.go --dotenv=true
 
 .PHONY: build-image
 build-image:

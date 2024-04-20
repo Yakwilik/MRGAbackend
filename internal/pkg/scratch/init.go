@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Yakwilik/MRGAbackend/internal/app/rest"
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -127,10 +126,6 @@ func (a *App) runGRPC() {
 func (a *App) runPublicHTTP() {
 	a.wg.Add(1)
 
-	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", a.publicMux))
-
-	a.mux.Handle("/api/", http.StripPrefix("/api", rest.New().Init()))
-
 	publicServer := &http.Server{
 		Handler: cors(a.mux),
 	}
@@ -149,7 +144,6 @@ func (a *App) initGRPCServer(desc ServiceDesc) {
 	}
 
 	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(logInterceptor))
-
 	desc.RegisterGRPC(a.grpcServer)
 	reflection.Register(a.grpcServer)
 }
@@ -165,4 +159,12 @@ func (a *App) initPublicHTTPHandlers(desc ServiceDesc) {
 func (a *App) initPublicHTTP() {
 	a.publicMux = runtime.NewServeMux(a.opts.ServeMuxOpts...)
 	a.mux = http.NewServeMux()
+	if a.opts.EnablePublicHandler {
+		h := a.opts.PublicHandler
+		if a.opts.EnablePublicMiddleware {
+			h = a.opts.PublicMiddleware(h)
+		}
+		a.mux.Handle("/api/", http.StripPrefix("/api", h))
+	}
+	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", a.publicMux))
 }
