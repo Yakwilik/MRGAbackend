@@ -155,3 +155,10 @@ func (a *Implementation) SendMessage(ctx context.Context, request *pb.SendMessag
 
 	return &pb.SendMessageResponse{}, nil
 }
+
+func (a *Implementation) GetHotThemes(ctx context.Context, request *pb.GetHotThemesRequest) (*pb.GetHotThemesResponse, error) {
+	return &pb.GetHotThemesResponse{ActualThemes: []string{
+		"Как отсудить свое имущество при развод",
+		"Что делать, если жена не дает развод",
+	}}, nil
+}

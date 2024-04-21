@@ -28,6 +28,7 @@ const (
 	Authorization_SendMessage_FullMethodName           = "/mrga.authorization.Authorization/SendMessage"
 	Authorization_GetDocumentCategories_FullMethodName = "/mrga.authorization.Authorization/GetDocumentCategories"
 	Authorization_SendRedirectSuggest_FullMethodName   = "/mrga.authorization.Authorization/SendRedirectSuggest"
+	Authorization_GetHotThemes_FullMethodName          = "/mrga.authorization.Authorization/GetHotThemes"
 )
 
 // AuthorizationClient is the client API for Authorization service.
@@ -43,6 +44,7 @@ type AuthorizationClient interface {
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
 	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error)
+	GetHotThemes(ctx context.Context, in *GetHotThemesRequest, opts ...grpc.CallOption) (*GetHotThemesResponse, error)
 }
 
 type authorizationClient struct {
@@ -134,6 +136,15 @@ func (c *authorizationClient) SendRedirectSuggest(ctx context.Context, in *SendR
 	return out, nil
 }
 
+func (c *authorizationClient) GetHotThemes(ctx context.Context, in *GetHotThemesRequest, opts ...grpc.CallOption) (*GetHotThemesResponse, error) {
+	out := new(GetHotThemesResponse)
+	err := c.cc.Invoke(ctx, Authorization_GetHotThemes_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthorizationServer is the server API for Authorization service.
 // All implementations must embed UnimplementedAuthorizationServer
 // for forward compatibility
@@ -147,6 +158,7 @@ type AuthorizationServer interface {
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
 	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error)
+	GetHotThemes(context.Context, *GetHotThemesRequest) (*GetHotThemesResponse, error)
 	mustEmbedUnimplementedAuthorizationServer()
 }
 
@@ -180,6 +192,9 @@ func (UnimplementedAuthorizationServer) GetDocumentCategories(context.Context, *
 }
 func (UnimplementedAuthorizationServer) SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRedirectSuggest not implemented")
+}
+func (UnimplementedAuthorizationServer) GetHotThemes(context.Context, *GetHotThemesRequest) (*GetHotThemesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHotThemes not implemented")
 }
 func (UnimplementedAuthorizationServer) mustEmbedUnimplementedAuthorizationServer() {}
 
@@ -356,6 +371,24 @@ func _Authorization_SendRedirectSuggest_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Authorization_GetHotThemes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetHotThemesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServer).GetHotThemes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Authorization_GetHotThemes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServer).GetHotThemes(ctx, req.(*GetHotThemesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Authorization_ServiceDesc is the grpc.ServiceDesc for Authorization service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -398,6 +431,10 @@ var Authorization_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendRedirectSuggest",
 			Handler:    _Authorization_SendRedirectSuggest_Handler,
+		},
+		{
+			MethodName: "GetHotThemes",
+			Handler:    _Authorization_GetHotThemes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

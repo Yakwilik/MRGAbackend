@@ -42,6 +42,8 @@ build-image:
 run-in-container:
 	 docker run -p 7001:7001 -p 7002:7002 myapp
 
+run-services:
+	docker compose up centrifugo db
 
 PG_PASSWORD=qwerty
 .PHONY: migrate

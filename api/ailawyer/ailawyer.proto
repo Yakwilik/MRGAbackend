@@ -127,8 +127,20 @@ service Authorization{
       body: "*"
     };
   }
+
+  rpc GetHotThemes(GetHotThemesRequest) returns (GetHotThemesResponse) {
+    option(google.api.http) = {
+      get: "/v1/chat/hot_themes"
+    };
+  }
 }
 
+message GetHotThemesRequest {
+}
+
+message GetHotThemesResponse {
+  repeated string actualThemes = 1;
+}
 message SendRedirectSuggestRequest{
   uint32 chat_id = 1;
   string action = 2;
