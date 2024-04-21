@@ -40,7 +40,7 @@ build-image:
 	docker build -t app -f build/Dockerfile .
 
 run-in-container:
-	 docker run -p 7001:7001 -p 7002:7002 myapp
+	 docker compose up
 
 run-services:
 	docker compose up centrifugo db

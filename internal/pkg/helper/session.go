@@ -2,53 +2,39 @@ package helper
 
 import (
 	"context"
-	"flag"
-	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 )
 
-var secure = false
-var samesiteMode http.SameSite = http.SameSiteLaxMode
-
-func init() {
-	withDotEnv := false
-	flag.BoolVar(&withDotEnv, "dotenv", false, "используется ли .env файл")
-	flag.Parse()
-
-	if withDotEnv {
-		err := godotenv.Load()
-		log.Println("parsed .env file")
-		if err != nil {
-			log.Fatalf("Error loading .env file: %v", err)
-		}
-	}
-
+var secure = func() bool {
 	sec, ok := os.LookupEnv("COOKIE_SECURE")
 	switch {
 	case !ok || sec == "false":
-		secure = false
+		return false
 	default:
-		secure = true
+		return true
 	}
-
+}
+var samesiteMode = func() http.SameSite {
 	samesite, ok := os.LookupEnv("SAME_SITE_MODE")
 	switch {
 	case samesite == "LAX":
-		samesiteMode = http.SameSiteLaxMode
+		return http.SameSiteLaxMode
 	case samesite == "STRICT":
-		samesiteMode = http.SameSiteStrictMode
+		return http.SameSiteStrictMode
 	case !ok || samesite == "NONE":
 		fallthrough
 	default:
-		samesiteMode = http.SameSiteNoneMode
+		return http.SameSiteNoneMode
 	}
-	slog.Info("samesite: ", "mode:", samesite)
+}
+
+func init() {
+	slog.Info("samesite: ", "mode:", samesiteMode())
 
 }
 
@@ -68,16 +54,16 @@ func SessionIDFromContextMD(ctx context.Context) (string, bool) {
 	return sessionCookie.Value, true
 }
 
-func SetSessionID(ctx context.Context, sessionID string) {
+func SetSessionID(ctx context.Context, domain, sessionID string) {
 	c := http.Cookie{
 		Name:     sessionKey,
 		Value:    sessionID,
 		Path:     "/",
-		Domain:   ".meetme-app.ru",
+		Domain:   domain,
 		Expires:  time.Now().Add(time.Hour * 24),
-		Secure:   secure,
+		Secure:   secure(),
 		HttpOnly: true,
-		SameSite: samesiteMode,
+		SameSite: samesiteMode(),
 	}
 
 	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{

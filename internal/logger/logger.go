@@ -8,21 +8,35 @@ import (
 	"os"
 )
 
-func InitLogger(outputAddr string, environment string) {
+type Options struct {
+	OutputAddr  string
+	Environment string
+	AppName     string
+	LogLevel    slog.Level
+}
+
+func InitLogger(opts Options) {
 	writers := []io.Writer{os.Stdout}
-	log.Printf("environment: %s", environment)
-	if environment == "prod" {
-		writer, err := gelf.NewTCPWriter(outputAddr)
+
+	if opts.OutputAddr != "" {
+		writer, err := gelf.NewTCPWriter(opts.OutputAddr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		writers = append(writers, writer)
 	}
-	handler := slog.NewJSONHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
+	var handler slog.Handler = slog.NewJSONHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
 		AddSource:   true,
 		ReplaceAttr: nil,
+		Level:       opts.LogLevel,
 	})
 
-	slog.SetDefault(slog.New(handler))
+	handler = handler.WithGroup("backend").WithAttrs([]slog.Attr{
+		slog.Any("AppName", opts.AppName),
+		slog.Any("Environment", opts.Environment),
+	})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+	slog.Info("Logger initialized", "output address", opts.OutputAddr, "log level", opts.LogLevel)
 	log.Printf("Logger initialized with writers: %+v", writers)
 }

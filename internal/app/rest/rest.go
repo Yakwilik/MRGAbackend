@@ -90,5 +90,6 @@ func (receiver *Handler) centrifugoConnect(w http.ResponseWriter, r *http.Reques
 		User:     email,
 		ExpireAt: time.Now().Add(time.Hour * 24).Unix(),
 		Channels: []string{email},
+		Subs:     map[string]map[string]any{email: {"allow_publish_for_client": true}},
 	}})
 }

@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"log"
+	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 )
@@ -28,7 +28,7 @@ type ServiceDesc interface {
 type App struct {
 	desc       ServiceDesc
 	mux        *http.ServeMux
-	publicMux  *runtime.ServeMux
+	gatewayMux *runtime.ServeMux
 	grpcServer *grpc.Server
 	opts       *Options
 	lis        *listeners
@@ -71,26 +71,24 @@ func InitApp(opts ...Option) (*App, error) {
 		return nil, err
 	}
 
+	logOptions := logger.Options{
+		OutputAddr:  o.LoggerOutput,
+		Environment: o.Environment,
+		AppName:     o.AppName,
+		LogLevel:    o.LogLevel,
+	}
+	logger.InitLogger(logOptions)
+
 	a := &App{
 		opts: o,
 		wg:   &sync.WaitGroup{},
 	}
-	environment, ok := os.LookupEnv("ENV")
-
-	switch {
-	case environment == "dev":
-	case !ok:
-		environment = "dev"
-	}
-
-	logger.InitLogger(os.Getenv("LOGGER_ADDR"), environment)
 
 	lst, err := newListeners(a.opts)
 	if err != nil {
 		return nil, fmt.Errorf("can't start listeners: %w", err)
 	}
 	a.lis = lst
-	a.initPublicHTTP()
 
 	return a, nil
 }
@@ -103,8 +101,9 @@ func (a *App) Run(impl ...Service) error {
 
 	a.desc = NewCompoundServiceDesc(descs...)
 
-	a.initPublicHTTPHandlers(a.desc)
+	a.initPublicHTTP()
 	a.initGRPCServer(NewCompoundServiceDesc(a.desc))
+	a.initPublicHTTPHandlers(a.desc)
 	a.runPublicHTTP()
 	a.runGRPC()
 	a.wg.Wait()
@@ -126,8 +125,15 @@ func (a *App) runGRPC() {
 func (a *App) runPublicHTTP() {
 	a.wg.Add(1)
 
+	var h http.Handler = a.mux
+	if a.opts.EnablePublicMuxMiddleware {
+		for _, mw := range a.opts.PublicMuxMiddleware {
+			slog.Debug("adding public mux middleware")
+			h = mw(h)
+		}
+	}
 	publicServer := &http.Server{
-		Handler: cors(a.mux),
+		Handler: h,
 	}
 
 	go func() {
@@ -143,28 +149,42 @@ func (a *App) initGRPCServer(desc ServiceDesc) {
 		return
 	}
 
-	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(logInterceptor))
+	slog.Info("initializing gRPC server", "interceptor", "LogInterceptor")
+	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(LogInterceptor))
 	desc.RegisterGRPC(a.grpcServer)
 	reflection.Register(a.grpcServer)
 }
 
 func (a *App) initPublicHTTPHandlers(desc ServiceDesc) {
 	if desc != nil {
-		if err := desc.RegisterGateway(context.Background(), a.publicMux); err != nil {
+		if err := desc.RegisterGateway(context.Background(), a.gatewayMux); err != nil {
 			log.Fatalf("error while register gateway: %v", err)
 		}
 	}
 }
 
 func (a *App) initPublicHTTP() {
-	a.publicMux = runtime.NewServeMux(a.opts.ServeMuxOpts...)
+	a.gatewayMux = runtime.NewServeMux(a.opts.ServeMuxOpts...)
 	a.mux = http.NewServeMux()
-	if a.opts.EnablePublicHandler {
-		h := a.opts.PublicHandler
-		if a.opts.EnablePublicMiddleware {
-			h = a.opts.PublicMiddleware(h)
+	if a.opts.EnableCustomHandler {
+		h := a.opts.CustomHandler
+		if a.opts.EnableCustomMuxMiddleware {
+			for _, mw := range a.opts.CustomMuxMiddleware {
+				if mw != nil {
+					h = mw(h)
+				}
+			}
 		}
 		a.mux.Handle("/api/", http.StripPrefix("/api", h))
 	}
-	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", a.publicMux))
+
+	var gatewayMux http.Handler = a.gatewayMux
+	if a.opts.EnableGatewayMiddleware {
+		for _, mw := range a.opts.GatewayMiddleware {
+			if mw != nil {
+				gatewayMux = mw(gatewayMux)
+			}
+		}
+	}
+	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", gatewayMux))
 }

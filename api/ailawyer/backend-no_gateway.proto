@@ -1,138 +1,60 @@
 syntax = "proto3";
 
-package mrga.authorization;
+package mrga.backend;
 
-option go_package="mrga/service/authorization";
+option go_package="mrga/service/backend";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
-import "gnostic/openapi/v3/openapiv3.proto";
-import "gnostic/openapi/v3/annotations.proto";
-
-option (gnostic.openapi.v3.document) = {
-  info: {
-    title: "Speranskiy";
-    version: "1.0";
-  };
-  servers: [
-    {
-      url: "{scheme}://{host}:{port}/{base_url}";
-      variables: {
-        additional_properties :[
-        {
-          name: "port";
-          value: {
-            enum: [
-              "80",
-              "7001",
-              "443"
-            ];
-            default: "7001";
-          };
-        },
-        {
-          name: "scheme";
-          value: {
-            enum: [
-              "http",
-              "https"
-            ];
-            default: "http";
-          };
-        },
-        {
-          name: "host";
-          value: {
-            enum: [
-              "localhost",
-              "194.61.3.193",
-              "meetme-app.ru"
-            ];
-            default: "localhost";
-          };
-        },
-        {
-          name: "base_url";
-          value: {
-            enum: [
-              "api/gateway"
-            ];
-            default: "api/gateway";
-          };
-        }
-      ];
-    };
-    }
-  ];
-};
-
-service Authorization{
+service Backend{
   rpc SignUPV1 (SignUPRequest) returns (SignUPResponse){
-    option (google.api.http) = {
-      post: "/v1/sign_up"
-      body: "*"
-    };
   }
 
   rpc Login (LoginRequest) returns (LoginResponse){
-    option(google.api.http) = {
-      post: "/v1/login"
-      body: "*"
-    };
   }
 
   rpc CheckLogin (CheckLoginRequest) returns (CheckLoginResponse){
-    option(google.api.http) = {
-      get: "/v1/check_login"
-    };
   }
 
   rpc BeginConversation(BeginConversationRequest) returns (BeginConversationResponse) {
-    option(google.api.http) = {
-      post: "/v1/chat/begin"
-      body: "*"
-    };
   }
 
   rpc GetConversations(GetConversationsRequest) returns (GetConversationsResponse) {
-    option(google.api.http) = {
-      get: "/v1/chats"
-    };
   }
 
   rpc GetConversation(GetConversationRequest) returns (GetConversationResponse) {
-    option(google.api.http) = {
-      get: "/v1/chats/{id}"
-    };
   }
 
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse){
-    option(google.api.http) = {
-      post: "/v1/chats/{chat_id}/send"
-      body: "*"
-    };
   }
 
   rpc GetDocumentCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
-    option(google.api.http) = {
-      get: "/v1/documents/categories"
-    };
   }
 
   rpc SendRedirectSuggest(SendRedirectSuggestRequest) returns (SendRedirectSuggestResponse) {
-    option(google.api.http) = {
-      post: "/v1/suggest_redirect"
-      body: "*"
-    };
   }
 
   rpc GetHotThemes(GetHotThemesRequest) returns (GetHotThemesResponse) {
-    option(google.api.http) = {
-      get: "/v1/chat/hot_themes"
-    };
   }
+
+  rpc TestStreamFromServer(TestMessageRequest) returns (stream TestMessageResponse) {
+  }
+
+  rpc TestStreamFromClient(stream TestMessageRequest) returns (TestMessageResponse) {
+  }
+
+  rpc TestStreamClientAndServer(stream TestMessageRequest) returns (stream TestMessageResponse) {
+  }
+}
+
+message TestMessageRequest{
+  string data = 1;
+}
+
+message TestMessageResponse{
+  string data = 1;
 }
 
 message GetHotThemesRequest {

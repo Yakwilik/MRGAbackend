@@ -35,7 +35,7 @@ func (a *Implementation) SignUPV1(ctx context.Context, req *pb.SignUPRequest) (*
 		return nil, err
 	}
 
-	helper.SetSessionID(ctx, sessionID)
+	helper.SetSessionID(ctx, a.cfg.Domain(ctx), sessionID)
 
 	return &pb.SignUPResponse{Email: req.GetEmail().GetValue()}, nil
 }
@@ -72,7 +72,7 @@ func (a *Implementation) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 		return nil, err
 	}
 
-	helper.SetSessionID(ctx, sessionID)
+	helper.SetSessionID(ctx, a.cfg.Domain(ctx), sessionID)
 
 	return &pb.LoginResponse{Email: req.GetEmail().GetValue()}, nil
 }

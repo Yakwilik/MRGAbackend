@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Yakwilik/MRGAbackend/internal/client/ai_bot"
+	"github.com/Yakwilik/MRGAbackend/internal/config"
 	"github.com/Yakwilik/MRGAbackend/internal/core"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	pb "github.com/Yakwilik/MRGAbackend/internal/pb/ailawyer"
@@ -15,41 +16,44 @@ import (
 )
 
 type Implementation struct {
-	pb.UnimplementedAuthorizationServer
-
+	pb.UnimplementedBackendServer
+	cfg      *config.Config
 	useCase  core.UseCase
 	aiBotApi ai_bot.Interface
 }
 
-type AuthorizationServiceDesc struct {
-	svc pb.AuthorizationServer
+type BackendServiceDesc struct {
+	svc pb.BackendServer
 }
 
-func (a *AuthorizationServiceDesc) RegisterGRPC(server *grpc.Server) {
-	pb.RegisterAuthorizationServer(server, a.svc)
+func (a *BackendServiceDesc) RegisterGRPC(server *grpc.Server) {
+	pb.RegisterBackendServer(server, a.svc)
 }
 
-func (a *AuthorizationServiceDesc) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) error {
-	return pb.RegisterAuthorizationHandlerServer(ctx, mux, a.svc)
+func (a *BackendServiceDesc) RegisterGateway(ctx context.Context, mux *runtime.ServeMux) error {
+	return pb.RegisterBackendHandlerServer(ctx, mux, a.svc)
 }
 
-func NewAuthorizationServiceDesc(implementation *Implementation) scratch.ServiceDesc {
-	return &AuthorizationServiceDesc{svc: implementation}
+func NewBackendServiceDesc(implementation *Implementation) scratch.ServiceDesc {
+	return &BackendServiceDesc{svc: implementation}
 }
 
 func (a *Implementation) GetDescription() scratch.ServiceDesc {
-	return NewAuthorizationServiceDesc(a)
+	return NewBackendServiceDesc(a)
 }
 
 type Config struct {
-	Auth   core.UseCase
+	UseCase core.UseCase
+	// почему не в usecase?
 	BotApi ai_bot.Interface
+	Config *config.Config
 }
 
-func NewAuthorization(cfg Config) *Implementation {
+func NewBackend(cfg Config) *Implementation {
 	return &Implementation{
-		useCase:  cfg.Auth,
+		useCase:  cfg.UseCase,
 		aiBotApi: cfg.BotApi,
+		cfg:      cfg.Config,
 	}
 }
 

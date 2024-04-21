@@ -1,6 +1,8 @@
 package scratch
 
 import (
+	"github.com/google/uuid"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -8,7 +10,7 @@ import (
 var allowedHosts = []string{}
 var now = time.Now()
 
-func cors(h http.Handler) http.Handler {
+func CorsMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("ApiVersion", now.String())
 		if r.Header.Get("Origin") == "" {
@@ -25,5 +27,63 @@ func cors(h http.Handler) http.Handler {
 			return
 		}
 		h.ServeHTTP(w, r)
+	})
+}
+
+type ResponseWriter struct {
+	ResponseWriter http.ResponseWriter
+	statusCode     int
+}
+
+func (rw *ResponseWriter) Header() http.Header {
+	return rw.ResponseWriter.Header()
+}
+
+func (rw *ResponseWriter) Write(bytes []byte) (int, error) {
+	if rw.statusCode == 0 {
+		rw.statusCode = http.StatusOK
+	}
+	return rw.ResponseWriter.Write(bytes)
+}
+
+func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
+	return &ResponseWriter{
+		ResponseWriter: w,
+		statusCode:     0,
+	}
+
+}
+
+func (rw *ResponseWriter) WriteHeader(code int) {
+	slog.Info("", "status", code)
+	if rw.statusCode != 0 {
+		return
+	}
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		requestID := r.Header.Get("X-Request-ID")
+		if requestID == "" {
+			requestID = uuid.New().String()
+			r.Header.Set("X-Request-ID", requestID) // Устанавливаем для внутреннего использования
+		}
+		w.Header().Set("X-Request-ID", requestID) // Отправляем обратно клиенту
+
+		rw := NewResponseWriter(w)
+		next.ServeHTTP(rw, r)
+		duration := time.Since(start)
+
+		slog.Info("request_info",
+			"request_id", requestID,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"status_code", rw.statusCode,
+			"duration", duration.String(),
+			"ip", r.RemoteAddr,
+			"timestamp", time.Now().Format(time.RFC3339))
 	})
 }
