@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Yakwilik/MRGAbackend/internal/client/ai_bot"
+	"github.com/Yakwilik/MRGAbackend/internal/client/ai_botV2"
 	"github.com/Yakwilik/MRGAbackend/internal/config"
 	"github.com/Yakwilik/MRGAbackend/internal/core"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
@@ -17,9 +18,10 @@ import (
 
 type Implementation struct {
 	pb.UnimplementedBackendServer
-	cfg      *config.Config
-	useCase  core.UseCase
-	aiBotApi ai_bot.Interface
+	cfg          *config.Config
+	useCase      core.UseCase
+	aiBotApi     ai_bot.Interface
+	aiBotService ai_botV2.Interface
 }
 
 type BackendServiceDesc struct {
@@ -45,15 +47,17 @@ func (a *Implementation) GetDescription() scratch.ServiceDesc {
 type Config struct {
 	UseCase core.UseCase
 	// почему не в usecase?
-	BotApi ai_bot.Interface
-	Config *config.Config
+	BotApi        ai_bot.Interface
+	BotApiService ai_botV2.Interface
+	Config        *config.Config
 }
 
 func NewBackend(cfg Config) *Implementation {
 	return &Implementation{
-		useCase:  cfg.UseCase,
-		aiBotApi: cfg.BotApi,
-		cfg:      cfg.Config,
+		useCase:      cfg.UseCase,
+		aiBotApi:     cfg.BotApi,
+		aiBotService: cfg.BotApiService,
+		cfg:          cfg.Config,
 	}
 }
 

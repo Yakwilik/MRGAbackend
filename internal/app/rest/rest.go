@@ -2,12 +2,11 @@ package rest
 
 import (
 	"encoding/json"
-	"fmt"
 	index "github.com/Yakwilik/MRGAbackend/internal/app/templ"
 	"github.com/Yakwilik/MRGAbackend/internal/core"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
-	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -29,6 +28,7 @@ func (receiver *Handler) Init() *http.ServeMux {
 }
 
 func (receiver *Handler) document(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
 
 	sb := &strings.Builder{}
 	index.Index().Render(r.Context(), sb)
@@ -70,7 +70,7 @@ type connectResponseData struct {
 
 func (receiver *Handler) centrifugoConnect(w http.ResponseWriter, r *http.Request) {
 	email, err := helper.GetEmailFromContext(r.Context())
-	slog.Info(fmt.Sprintf("email: %s, err: %v", email, err))
+	logger.Info(r.Context(), "email", email, "err", err)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte("{\n  \"disconnect\": {\n    \"code\": 4501,\n    \"reason\": \"unauthorized\"\n  }\n}"))
@@ -78,13 +78,13 @@ func (receiver *Handler) centrifugoConnect(w http.ResponseWriter, r *http.Reques
 	}
 	req := connectRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		slog.Error("error %v", err)
+		logger.Error(r.Context(), "error %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("{\n  \"disconnect\": {\n    \"code\": 4501,\n    \"reason\": \"unauthorized\"\n  }\n}"))
 		return
 	}
 	bytes, _ := json.Marshal(req)
-	slog.Info(string(bytes))
+	logger.Info(r.Context(), "request", "body", string(bytes), "handler", "centrifugoConnect")
 
 	json.NewEncoder(w).Encode(connectResponse{Result: connectResponseData{
 		User:     email,

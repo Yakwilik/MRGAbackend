@@ -121,12 +121,14 @@ func (s *storage) GetConversations(ctx context.Context, userEmail string) ([]mod
 	rows, err := s.db.Query(`
 SELECT DISTINCT c.chat_id,
                 m.message AS last_message,
-                m.sent_at AS sent_at
+                m.sent_at AS sent_at,
+				m.from_bot AS from_bot
 FROM chats c
          INNER JOIN
      (SELECT chat_id,
              message,
-             sent_at
+             sent_at,
+             from_bot
       FROM messages
       WHERE (chat_id, sent_at) IN (SELECT chat_id, MAX(sent_at) AS sent_at
                                    FROM messages

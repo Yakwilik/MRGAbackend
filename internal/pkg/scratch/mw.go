@@ -1,8 +1,8 @@
 package scratch
 
 import (
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/google/uuid"
-	"log/slog"
 	"net/http"
 	"time"
 )
@@ -55,7 +55,6 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 }
 
 func (rw *ResponseWriter) WriteHeader(code int) {
-	slog.Info("", "status", code)
 	if rw.statusCode != 0 {
 		return
 	}
@@ -72,17 +71,19 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			r.Header.Set("X-Request-ID", requestID) // Устанавливаем для внутреннего использования
 		}
 		w.Header().Set("X-Request-ID", requestID) // Отправляем обратно клиенту
+		ctx := logger.WithRequestID(r.Context(), requestID)
 
 		rw := NewResponseWriter(w)
-		next.ServeHTTP(rw, r)
+		next.ServeHTTP(rw, r.WithContext(ctx))
 		duration := time.Since(start)
 
-		slog.Info("request_info",
-			"request_id", requestID,
+		logger.Info(ctx, "request_info",
 			"method", r.Method,
 			"path", r.URL.Path,
 			"status_code", rw.statusCode,
-			"duration", duration.String(),
+			"duration", duration,
+			"duration_string", duration.String(),
+			"duration_milliseconds", duration.Milliseconds(),
 			"ip", r.RemoteAddr,
 			"timestamp", time.Now().Format(time.RFC3339))
 	})

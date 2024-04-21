@@ -26,6 +26,7 @@ const (
 	Backend_GetConversations_FullMethodName          = "/mrga.backend.Backend/GetConversations"
 	Backend_GetConversation_FullMethodName           = "/mrga.backend.Backend/GetConversation"
 	Backend_SendMessage_FullMethodName               = "/mrga.backend.Backend/SendMessage"
+	Backend_SendMessageV2_FullMethodName             = "/mrga.backend.Backend/SendMessageV2"
 	Backend_GetDocumentCategories_FullMethodName     = "/mrga.backend.Backend/GetDocumentCategories"
 	Backend_SendRedirectSuggest_FullMethodName       = "/mrga.backend.Backend/SendRedirectSuggest"
 	Backend_GetHotThemes_FullMethodName              = "/mrga.backend.Backend/GetHotThemes"
@@ -45,6 +46,7 @@ type BackendClient interface {
 	GetConversations(ctx context.Context, in *GetConversationsRequest, opts ...grpc.CallOption) (*GetConversationsResponse, error)
 	GetConversation(ctx context.Context, in *GetConversationRequest, opts ...grpc.CallOption) (*GetConversationResponse, error)
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
+	SendMessageV2(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (Backend_SendMessageV2Client, error)
 	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error)
 	GetHotThemes(ctx context.Context, in *GetHotThemesRequest, opts ...grpc.CallOption) (*GetHotThemesResponse, error)
@@ -124,6 +126,38 @@ func (c *backendClient) SendMessage(ctx context.Context, in *SendMessageRequest,
 	return out, nil
 }
 
+func (c *backendClient) SendMessageV2(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (Backend_SendMessageV2Client, error) {
+	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[0], Backend_SendMessageV2_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &backendSendMessageV2Client{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Backend_SendMessageV2Client interface {
+	Recv() (*MessageV2, error)
+	grpc.ClientStream
+}
+
+type backendSendMessageV2Client struct {
+	grpc.ClientStream
+}
+
+func (x *backendSendMessageV2Client) Recv() (*MessageV2, error) {
+	m := new(MessageV2)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *backendClient) GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error) {
 	out := new(GetCategoriesResponse)
 	err := c.cc.Invoke(ctx, Backend_GetDocumentCategories_FullMethodName, in, out, opts...)
@@ -152,7 +186,7 @@ func (c *backendClient) GetHotThemes(ctx context.Context, in *GetHotThemesReques
 }
 
 func (c *backendClient) TestStreamFromServer(ctx context.Context, in *TestMessageRequest, opts ...grpc.CallOption) (Backend_TestStreamFromServerClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[0], Backend_TestStreamFromServer_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[1], Backend_TestStreamFromServer_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +218,7 @@ func (x *backendTestStreamFromServerClient) Recv() (*TestMessageResponse, error)
 }
 
 func (c *backendClient) TestStreamFromClient(ctx context.Context, opts ...grpc.CallOption) (Backend_TestStreamFromClientClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[1], Backend_TestStreamFromClient_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[2], Backend_TestStreamFromClient_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +252,7 @@ func (x *backendTestStreamFromClientClient) CloseAndRecv() (*TestMessageResponse
 }
 
 func (c *backendClient) TestStreamClientAndServer(ctx context.Context, opts ...grpc.CallOption) (Backend_TestStreamClientAndServerClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[2], Backend_TestStreamClientAndServer_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[3], Backend_TestStreamClientAndServer_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -259,6 +293,7 @@ type BackendServer interface {
 	GetConversations(context.Context, *GetConversationsRequest) (*GetConversationsResponse, error)
 	GetConversation(context.Context, *GetConversationRequest) (*GetConversationResponse, error)
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
+	SendMessageV2(*SendMessageRequest, Backend_SendMessageV2Server) error
 	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error)
 	GetHotThemes(context.Context, *GetHotThemesRequest) (*GetHotThemesResponse, error)
@@ -292,6 +327,9 @@ func (UnimplementedBackendServer) GetConversation(context.Context, *GetConversat
 }
 func (UnimplementedBackendServer) SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedBackendServer) SendMessageV2(*SendMessageRequest, Backend_SendMessageV2Server) error {
+	return status.Errorf(codes.Unimplemented, "method SendMessageV2 not implemented")
 }
 func (UnimplementedBackendServer) GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentCategories not implemented")
@@ -448,6 +486,27 @@ func _Backend_SendMessage_Handler(srv interface{}, ctx context.Context, dec func
 		return srv.(BackendServer).SendMessage(ctx, req.(*SendMessageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _Backend_SendMessageV2_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SendMessageRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(BackendServer).SendMessageV2(m, &backendSendMessageV2Server{stream})
+}
+
+type Backend_SendMessageV2Server interface {
+	Send(*MessageV2) error
+	grpc.ServerStream
+}
+
+type backendSendMessageV2Server struct {
+	grpc.ServerStream
+}
+
+func (x *backendSendMessageV2Server) Send(m *MessageV2) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _Backend_GetDocumentCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -626,6 +685,11 @@ var Backend_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SendMessageV2",
+			Handler:       _Backend_SendMessageV2_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "TestStreamFromServer",
 			Handler:       _Backend_TestStreamFromServer_Handler,

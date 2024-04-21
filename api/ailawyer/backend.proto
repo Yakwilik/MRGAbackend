@@ -115,6 +115,13 @@ service Backend{
     };
   }
 
+  rpc SendMessageV2(SendMessageRequest) returns (stream MessageV2){
+    option(google.api.http) = {
+      post: "/v2/chats/{chat_id}/send"
+      body: "*"
+    };
+  }
+
   rpc GetDocumentCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
     option(google.api.http) = {
       get: "/v1/documents/categories"
@@ -209,9 +216,7 @@ message SendMessageRequest{
   NewMessage msg = 2;
 }
 
-message SendMessageResponse{
-
-}
+message SendMessageResponse{}
 
 message BeginConversationRequest {
   NewMessage msg = 1;
@@ -240,6 +245,28 @@ message Message {
   string message = 1;
   bool from_chatbot = 2;
   google.protobuf.Timestamp sent_at = 3;
+}
+
+// Enum для определения роли сообщения
+enum MessageRole {
+  USER = 0;       // Сообщение от пользователя
+  ASSISTANT = 1;  // Сообщение от ассистента
+  TECHNICAL = 2;  // Техническое сообщение
+}
+
+// Enum для статуса сообщения
+enum MessageStatus {
+  OK = 0;                  // Сообщение обработано без ошибок
+  ERROR = 1;               // Произошла ошибка при обработке сообщения
+}
+
+message MessageV2 {
+  string text = 1; // Текст сообщения
+  MessageRole role = 2; // Роль отправителя сообщения
+  optional uint32 chat_id = 3;
+  optional uint32 msg_id = 4;
+  MessageStatus status = 5;   // Статус сообщения
+  string errorDetails = 6;    // Описание ошибки, если статус == ERROR
 }
 
 message GetConversationRequest{

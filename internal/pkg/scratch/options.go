@@ -3,6 +3,7 @@ package scratch
 import (
 	"context"
 	"fmt"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"log/slog"
@@ -86,9 +87,9 @@ func LogInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServer
 
 	// Логгирование ответа
 	if err != nil {
-		slog.Error("Request completed with error", "error", err)
+		logger.Error(ctx, "Request completed with error", "error", err)
 	} else {
-		slog.Info("Request completed successfully", "response", resp)
+		logger.Error(ctx, "Request completed successfully", "response", resp)
 	}
 
 	return resp, err

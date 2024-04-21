@@ -5,6 +5,7 @@ import (
 	"github.com/Yakwilik/MRGAbackend/internal/app/grpc"
 	"github.com/Yakwilik/MRGAbackend/internal/app/rest"
 	"github.com/Yakwilik/MRGAbackend/internal/client/ai_bot"
+	"github.com/Yakwilik/MRGAbackend/internal/client/ai_botV2"
 	"github.com/Yakwilik/MRGAbackend/internal/config"
 	"github.com/Yakwilik/MRGAbackend/internal/core"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
@@ -51,7 +52,10 @@ func main() {
 	if err := app.Run(grpc.NewBackend(grpc.Config{
 		UseCase: core,
 		BotApi:  ai_bot.New(core, cfg.ChatBotAddr(ctx)),
-		Config:  cfg,
+		BotApiService: ai_botV2.MustNew(ai_botV2.Config{
+			ServiceAddr: cfg.ChatBotServiceAddr(ctx),
+		}),
+		Config: cfg,
 	})); err != nil {
 		log.Fatalf("can't run app: %s", err)
 	}

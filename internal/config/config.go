@@ -10,17 +10,18 @@ import (
 )
 
 type Config struct {
-	DBHost      func(ctx context.Context) string
-	DBPort      func(ctx context.Context) string
-	DBUsername  func(ctx context.Context) string
-	DBPassword  func(ctx context.Context) string
-	DBName      func(ctx context.Context) string
-	ChatBotAddr func(ctx context.Context) string
-	LoggerAddr  func(ctx context.Context) string
-	LogLevel    func(ctx context.Context) slog.Level
-	Environment func(ctx context.Context) string
-	AppName     func(ctx context.Context) string
-	Domain      func(ctx context.Context) string
+	DBHost             func(ctx context.Context) string
+	DBPort             func(ctx context.Context) string
+	DBUsername         func(ctx context.Context) string
+	DBPassword         func(ctx context.Context) string
+	DBName             func(ctx context.Context) string
+	ChatBotAddr        func(ctx context.Context) string
+	ChatBotServiceAddr func(ctx context.Context) string
+	LoggerAddr         func(ctx context.Context) string
+	LogLevel           func(ctx context.Context) slog.Level
+	Environment        func(ctx context.Context) string
+	AppName            func(ctx context.Context) string
+	Domain             func(ctx context.Context) string
 }
 
 func ParseConfig() *Config {
@@ -122,6 +123,13 @@ func ParseConfig() *Config {
 				return ".localhost"
 			}
 			return domain
+		},
+		ChatBotServiceAddr: func(ctx context.Context) string {
+			addr, ok := os.LookupEnv("CHAT_BOT_SERVICE_ADDR")
+			if !ok {
+				return "localhost:50051"
+			}
+			return addr
 		},
 	}
 }

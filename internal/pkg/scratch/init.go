@@ -36,6 +36,8 @@ type App struct {
 }
 
 var mdOption = runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
+	existingMD, _ := metadata.FromIncomingContext(ctx)
+
 	outMD := metadata.MD{}
 
 	for key, val := range request.Header {
@@ -43,7 +45,8 @@ var mdOption = runtime.WithMetadata(func(ctx context.Context, request *http.Requ
 			outMD[key] = val
 		}
 	}
-	return outMD
+
+	return metadata.Join(existingMD, outMD)
 })
 
 var headerOption = runtime.WithOutgoingHeaderMatcher(func(s string) (string, bool) {

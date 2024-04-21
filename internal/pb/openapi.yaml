@@ -326,6 +326,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v2/chats/{chatId}/send:
+        post:
+            tags:
+                - Backend
+            operationId: Backend_SendMessageV2
+            parameters:
+                - name: chatId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MessageV2'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
         BeginConversationRequest:
@@ -444,6 +475,25 @@ components:
                 sentAt:
                     type: string
                     format: date-time
+        MessageV2:
+            type: object
+            properties:
+                text:
+                    type: string
+                role:
+                    type: integer
+                    format: enum
+                chatId:
+                    type: integer
+                    format: uint32
+                msgId:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: enum
+                errorDetails:
+                    type: string
         NewMessage:
             type: object
             properties:
