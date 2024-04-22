@@ -112,7 +112,7 @@ func RegisterChatServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/chatbot.ChatService/RespondToUserQuery", runtime.WithHTTPPathPattern("/chatbot.ChatService/RespondToUserQuery"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/chat.ChatService/RespondToUserQuery", runtime.WithHTTPPathPattern("/chat.ChatService/RespondToUserQuery"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -132,7 +132,7 @@ func RegisterChatServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 }
 
 var (
-	pattern_ChatService_RespondToUserQuery_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"chatbot.ChatService", "RespondToUserQuery"}, ""))
+	pattern_ChatService_RespondToUserQuery_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"chat.ChatService", "RespondToUserQuery"}, ""))
 )
 
 var (

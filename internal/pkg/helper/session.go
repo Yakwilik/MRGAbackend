@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"log/slog"
@@ -34,8 +35,7 @@ var samesiteMode = func() http.SameSite {
 }
 
 func init() {
-	slog.Info("samesite: ", "mode:", samesiteMode())
-
+	logger.Info(context.Background(), "samesite: ", "mode:", samesiteMode())
 }
 
 const sessionKey = "session_id"

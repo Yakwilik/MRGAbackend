@@ -38,7 +38,8 @@ func MustNew(cfg Config) Interface {
 }
 
 func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatRequest) (<-chan *model.ChatResponseChunk, error) {
-	grpcStream, err := a.cli.RespondToUserQuery(ctx, encodeRespondToUserQuery(request))
+	data := encodeRespondToUserQuery(request)
+	grpcStream, err := a.cli.RespondToUserQuery(ctx, data)
 	if err != nil {
 		return nil, err
 	}
@@ -60,13 +61,15 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 					MessageStatus: model.StatusFail,
 					ErrorDetails:  err.Error(),
 				}
+				continue
 			}
+
 			responseChan <- &model.ChatResponseChunk{
-				Role:          model.Role(response.Role),
-				Chunk:         response.Output,
+				Role:          model.Role(response.GetRole()),
+				Chunk:         response.GetOutput(),
 				MessageStatus: model.StatusOk,
-				UserID:        response.UserId,
-				ChatID:        response.ChatId,
+				UserID:        response.GetUserId(),
+				ChatID:        response.GetChatId(),
 			}
 		}
 	}()
@@ -86,12 +89,17 @@ func encodeChatHistory(chatHistory []model.HistoryMessage) []*pb.ChatMessage {
 	if len(chatHistory) == 0 {
 		return []*pb.ChatMessage{}
 	}
-	response := make([]*pb.ChatMessage, len(chatHistory))
-	for _, msg := range chatHistory {
-		response = append(response, &pb.ChatMessage{
-			Role: msg.Role.String(),
-			Text: msg.Text,
-		})
+	lastMessageID := len(chatHistory) - 1
+	response := make([]*pb.ChatMessage, 0, len(chatHistory)-1)
+	for index, msg := range chatHistory {
+		if index == lastMessageID {
+			continue
+		} else {
+			response = append(response, &pb.ChatMessage{
+				Role: msg.Role.String(),
+				Text: msg.Text,
+			})
+		}
 	}
 
 	return response

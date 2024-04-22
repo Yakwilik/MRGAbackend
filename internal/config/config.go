@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"flag"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/joho/godotenv"
 	"log"
 	"log/slog"
@@ -31,7 +32,7 @@ func ParseConfig() *Config {
 
 	if withDotEnv {
 		err := godotenv.Load()
-		log.Println("parsed .env file")
+		logger.Info(context.Background(), "parsed .env file")
 		if err != nil {
 			log.Fatalf("Error loading .env file: %v", err)
 		}

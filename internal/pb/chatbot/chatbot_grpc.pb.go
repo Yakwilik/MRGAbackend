@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ChatService_RespondToUserQuery_FullMethodName = "/chatbot.ChatService/RespondToUserQuery"
+	ChatService_RespondToUserQuery_FullMethodName = "/chat.ChatService/RespondToUserQuery"
 )
 
 // ChatServiceClient is the client API for ChatService service.
@@ -122,7 +122,7 @@ func (x *chatServiceRespondToUserQueryServer) Send(m *ChatResponse) error {
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ChatService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "chatbot.ChatService",
+	ServiceName: "chat.ChatService",
 	HandlerType: (*ChatServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{

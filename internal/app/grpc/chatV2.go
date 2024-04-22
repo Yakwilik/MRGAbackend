@@ -33,6 +33,10 @@ func (a *Implementation) SendMessageV2(request *pb.SendMessageRequest, server pb
 		ChatHistory: encodeToChatHistory(history),
 	})
 
+	if err != nil {
+		return err
+	}
+
 	result := strings.Builder{}
 	for data := range responseChan {
 		if data.MessageStatus == model.StatusOk {

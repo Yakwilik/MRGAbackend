@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 	"log"
-	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
@@ -116,7 +115,7 @@ func (a *App) runGRPC() {
 	a.wg.Add(1)
 
 	if a.grpcServer != nil {
-		log.Println("running grpc")
+		logger.Info(context.Background(), "running grpc")
 		go func() {
 			defer a.wg.Done()
 			if err := a.grpcServer.Serve(a.lis.grpc); err != nil {
@@ -131,7 +130,6 @@ func (a *App) runPublicHTTP() {
 	var h http.Handler = a.mux
 	if a.opts.EnablePublicMuxMiddleware {
 		for _, mw := range a.opts.PublicMuxMiddleware {
-			slog.Debug("adding public mux middleware")
 			h = mw(h)
 		}
 	}
@@ -152,7 +150,6 @@ func (a *App) initGRPCServer(desc ServiceDesc) {
 		return
 	}
 
-	slog.Info("initializing gRPC server", "interceptor", "LogInterceptor")
 	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(LogInterceptor))
 	desc.RegisterGRPC(a.grpcServer)
 	reflection.Register(a.grpcServer)

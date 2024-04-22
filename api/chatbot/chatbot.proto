@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package chatbot;
+package chat;
 
 option go_package="mrga/service/chatbot";
 

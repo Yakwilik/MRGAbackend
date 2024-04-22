@@ -42,20 +42,20 @@ func main() {
 	storage := storagePkg.New(db)
 
 	core := core.New(storage)
-
-	app.WithCustomRestHandler(rest.New(core).Init()).
+	aiBotService := ai_botV2.MustNew(ai_botV2.Config{
+		ServiceAddr: cfg.ChatBotServiceAddr(ctx),
+	})
+	app.WithCustomRestHandler(rest.New(core, aiBotService).Init()).
 		WithPublicMuxMiddleware(scratch.LoggingMiddleware).
 		WithCustomRestMiddleware(func(handler http.Handler) http.Handler {
 			return helper.AuthMiddleware(core, handler)
 		}).WithPublicMuxMiddleware(scratch.CorsMiddleware)
 
 	if err := app.Run(grpc.NewBackend(grpc.Config{
-		UseCase: core,
-		BotApi:  ai_bot.New(core, cfg.ChatBotAddr(ctx)),
-		BotApiService: ai_botV2.MustNew(ai_botV2.Config{
-			ServiceAddr: cfg.ChatBotServiceAddr(ctx),
-		}),
-		Config: cfg,
+		UseCase:       core,
+		BotApi:        ai_bot.New(core, cfg.ChatBotAddr(ctx)),
+		BotApiService: aiBotService,
+		Config:        cfg,
 	})); err != nil {
 		log.Fatalf("can't run app: %s", err)
 	}

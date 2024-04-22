@@ -17,6 +17,8 @@ type Options struct {
 	LogLevel    slog.Level
 }
 
+var logDisabled = false
+
 func InitLogger(opts Options) {
 	writers := []io.Writer{os.Stdout}
 
@@ -44,8 +46,8 @@ func InitLogger(opts Options) {
 	})
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
-	slog.Info("Logger initialized", "output address", opts.OutputAddr, "log level", opts.LogLevel)
-	log.Printf("Logger initialized with writers: %+v", writers)
+	Info(context.Background(), "Logger initialized", "output address", opts.OutputAddr, "log level", opts.LogLevel)
+	Info(context.Background(), "Logger initialized with:", " writers", writers)
 }
 
 type reqIDKey struct{}
@@ -65,6 +67,9 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 }
 
 func Info(ctx context.Context, msg string, v ...interface{}) {
+	if logDisabled {
+		return
+	}
 	if reqID, ok := ctx.Value(reqIDKey{}).(string); ok {
 		v = append(v, reqIDKeyMD, reqID)
 	} else {
@@ -81,6 +86,9 @@ func Info(ctx context.Context, msg string, v ...interface{}) {
 }
 
 func Error(ctx context.Context, msg string, v ...interface{}) {
+	if !logDisabled {
+		return
+	}
 	if reqID, ok := ctx.Value(reqIDKey{}).(string); ok {
 		v = append(v, reqIDKeyMD, reqID)
 	} else {
