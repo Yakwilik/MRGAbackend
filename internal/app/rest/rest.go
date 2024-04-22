@@ -193,8 +193,17 @@ func (receiver *Handler) sendMsgV2(w http.ResponseWriter, r *http.Request) {
 		}
 		flusher.Flush()
 	}
+	receiver.useCase.SendMessage(r.Context(), model.CreateMessageData{
+		ChatID:  request.ChatID,
+		SentAt:  time.Now(),
+		FromBot: true,
+		Message: result.String(),
+	})
 
 	logger.Info(r.Context(), "request", "body", result.String(), "handler", "sendMsgV2")
+	fmt.Fprint(w, "event: close\n\n")
+	flusher.Flush()
+	w.Header().Set("Connection", "close")
 
 }
 

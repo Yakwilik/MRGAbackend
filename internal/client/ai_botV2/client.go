@@ -43,10 +43,41 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 	if err != nil {
 		return nil, err
 	}
+	//mockResp := []model.ChatResponseChunk{
+	//	//{
+	//	//	Role:          model.RoleAssistant,
+	//	//	Chunk:         "Привет; Спасибо, что пишешь мне",
+	//	//	MessageStatus: model.StatusOk,
+	//	//	ErrorDetails:  "",
+	//	//},
+	//	//{
+	//	//	Role:          model.RoleAssistant,
+	//	//	Chunk:         "Привет2; Спасибо, что пишешь мне",
+	//	//	MessageStatus: model.StatusOk,
+	//	//	ErrorDetails:  "",
+	//	//},
+	//	//{
+	//	//	Role:          model.RoleAssistant,
+	//	//	Chunk:         "сообщение",
+	//	//	MessageStatus: model.StatusOk,
+	//	//	ErrorDetails:  "",
+	//	//},
+	//}
+	//for i := 0; i < 500; i++ {
+	//	//for i, d := range mockResp {
+	//	mockResp = append(mockResp, model.ChatResponseChunk{
+	//		Role:          model.RoleAssistant,
+	//		Chunk:         fmt.Sprintf("сообщение%d", i),
+	//		MessageStatus: model.StatusOk,
+	//		ErrorDetails:  "",
+	//	})
+	//	//}
+	//}
 
 	responseChan := make(chan *model.ChatResponseChunk)
 	go func() {
 		defer close(responseChan)
+		//for _, response := range mockResp {
 		for {
 			response, err := grpcStream.Recv()
 			if err == io.EOF {
@@ -61,7 +92,7 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 					MessageStatus: model.StatusFail,
 					ErrorDetails:  err.Error(),
 				}
-				continue
+				break
 			}
 
 			responseChan <- &model.ChatResponseChunk{
@@ -71,6 +102,7 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 				UserID:        response.GetUserId(),
 				ChatID:        response.GetChatId(),
 			}
+			//responseChan <- &response
 		}
 	}()
 	return responseChan, nil
