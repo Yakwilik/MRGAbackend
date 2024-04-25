@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-    - host: meetme-app.ru
+    - host: yurist-bot.com
       http:
         paths:
           - path: /api/
@@ -25,5 +25,5 @@ spec:
                   number: 90
   tls:
     - hosts:
-        - meetme-app.ru
-      secretName: meetme-app-tls-prod
+        - yurist-bot.com
+      secretName: yurist-bot-tls
