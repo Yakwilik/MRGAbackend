@@ -1,0 +1,23 @@
+{
+  "token_hmac_secret_key": "my_secret",
+  "api_key": "my_api_key",
+  "log_level": "debug",
+  "admin_password": "password",
+  "admin_secret": "secret",
+  "admin": true,
+  "allowed_origins": ["http://localhost:63342", "http://localhost:3000"],
+  "history_size": 100,
+  "history_ttl": "1h",
+  "presence": true,
+  "proxy_connect_endpoint": "http://host.docker.internal:7001/api/connect",
+  "proxy_connect_timeout":  "1s",
+  "proxy_http_headers": [
+    "Origin",
+    "User-Agent",
+    "Cookie",
+    "Authorization",
+    "X-Real-Ip",
+    "X-Forwarded-For",
+    "X-Request-Id"
+  ]
+}

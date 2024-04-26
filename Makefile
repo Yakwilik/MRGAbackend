@@ -33,15 +33,17 @@ generate: .install-dependencies
 
 .PHONY: run
 run:
-	go run ./cmd/bff/main.go
+	go run ./cmd/bff/main.go --dotenv=true
 
 .PHONY: build-image
 build-image:
 	docker build -t app -f build/Dockerfile .
 
 run-in-container:
-	 docker run -p 7001:7001 -p 7002:7002 myapp
+	 docker compose up
 
+run-services:
+	docker compose up centrifugo db
 
 PG_PASSWORD=qwerty
 .PHONY: migrate

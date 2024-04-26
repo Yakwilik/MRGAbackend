@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"log/slog"
@@ -10,26 +11,31 @@ import (
 	"time"
 )
 
-var secure = false
-var samesiteMode http.SameSite = http.SameSiteLaxMode
-
-func init() {
+var secure = func() bool {
 	sec, ok := os.LookupEnv("COOKIE_SECURE")
 	switch {
 	case !ok || sec == "false":
-		secure = false
+		return false
 	default:
-		secure = true
+		return true
 	}
-
-	samesite, ok := os.LookupEnv("SAME_SITE_NONE")
+}
+var samesiteMode = func() http.SameSite {
+	samesite, ok := os.LookupEnv("SAME_SITE_MODE")
 	switch {
-	case !ok || samesite == "false":
-		samesiteMode = http.SameSiteLaxMode
+	case samesite == "LAX":
+		return http.SameSiteLaxMode
+	case samesite == "STRICT":
+		return http.SameSiteStrictMode
+	case !ok || samesite == "NONE":
+		fallthrough
 	default:
-		samesiteMode = http.SameSiteNoneMode
+		return http.SameSiteNoneMode
 	}
+}
 
+func init() {
+	logger.Info(context.Background(), "samesite: ", "mode:", samesiteMode())
 }
 
 const sessionKey = "session_id"
@@ -48,18 +54,20 @@ func SessionIDFromContextMD(ctx context.Context) (string, bool) {
 	return sessionCookie.Value, true
 }
 
-func SetSessionID(ctx context.Context, sessionID string) {
+func SetSessionID(ctx context.Context, domain, sessionID string) {
 	c := http.Cookie{
 		Name:     sessionKey,
 		Value:    sessionID,
 		Path:     "/",
+		Domain:   domain,
 		Expires:  time.Now().Add(time.Hour * 24),
-		Secure:   secure,
+		Secure:   secure(),
 		HttpOnly: true,
-		SameSite: samesiteMode,
+		SameSite: samesiteMode(),
 	}
 
 	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{
 		"Set-Cookie": c.String(),
 	}))
+
 }

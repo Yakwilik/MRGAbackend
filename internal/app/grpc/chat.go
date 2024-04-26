@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	pb "github.com/Yakwilik/MRGAbackend/internal/pb/ailawyer"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
@@ -138,7 +139,7 @@ func (a *Implementation) SendMessage(ctx context.Context, request *pb.SendMessag
 	go func() {
 		answer, err := a.aiBotApi.GetPromptAnswerWithChatHistory(ctx, request.GetChatId())
 		if err != nil {
-			log.Printf("error getting answer from AI: %v", err)
+			logger.Info(ctx, "error getting answer from AI: %v", err)
 			answer = "Не удалось обработать последний запрос. Повторите его"
 		}
 		err = a.useCase.SendMessage(ctx, model.CreateMessageData{
@@ -154,4 +155,11 @@ func (a *Implementation) SendMessage(ctx context.Context, request *pb.SendMessag
 	}()
 
 	return &pb.SendMessageResponse{}, nil
+}
+
+func (a *Implementation) GetHotThemes(ctx context.Context, request *pb.GetHotThemesRequest) (*pb.GetHotThemesResponse, error) {
+	return &pb.GetHotThemesResponse{ActualThemes: []string{
+		"Как отсудить свое имущество при развод",
+		"Что делать, если жена не дает развод",
+	}}, nil
 }

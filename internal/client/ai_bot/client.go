@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
-	"log"
 	"net/http"
 	"os"
 )
@@ -44,7 +44,7 @@ func newClient(serverHost string) client {
 
 func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptModel) (response, error) {
 	bodyBytes, err := json.Marshal(prompt)
-	log.Println(string(bodyBytes))
+	logger.Info(ctx, "requestBody", string(bodyBytes), "client", "SendPromptWithContext")
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
@@ -59,9 +59,8 @@ func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptMod
 	if err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
-	//respLog, _ := json.Marshal(resp)
 
-	log.Println("statusCode: ", resp.StatusCode, "err:", err)
+	logger.Info(ctx, "client", "SendPromptWithContext", "statusCode: ", resp.StatusCode, "err:", err)
 	decodedResp := response{}
 	if resp.StatusCode == http.StatusForbidden {
 		return response{}, errors.New("forbidden")

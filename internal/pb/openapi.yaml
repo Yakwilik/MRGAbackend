@@ -33,8 +33,8 @@ paths:
     /v1/chat/begin:
         post:
             tags:
-                - Authorization
-            operationId: Authorization_BeginConversation
+                - Backend
+            operationId: Backend_BeginConversation
             requestBody:
                 content:
                     application/json:
@@ -54,11 +54,29 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/chat/hot_themes:
+        get:
+            tags:
+                - Backend
+            operationId: Backend_GetHotThemes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetHotThemesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/chats:
         get:
             tags:
-                - Authorization
-            operationId: Authorization_GetConversations
+                - Backend
+            operationId: Backend_GetConversations
             responses:
                 "200":
                     description: OK
@@ -75,8 +93,8 @@ paths:
     /v1/chats/{chatId}/send:
         post:
             tags:
-                - Authorization
-            operationId: Authorization_SendMessage
+                - Backend
+            operationId: Backend_SendMessage
             parameters:
                 - name: chatId
                   in: path
@@ -106,8 +124,8 @@ paths:
     /v1/chats/{id}:
         get:
             tags:
-                - Authorization
-            operationId: Authorization_GetConversation
+                - Backend
+            operationId: Backend_GetConversation
             parameters:
                 - name: id
                   in: path
@@ -131,8 +149,8 @@ paths:
     /v1/check_login:
         get:
             tags:
-                - Authorization
-            operationId: Authorization_CheckLogin
+                - Backend
+            operationId: Backend_CheckLogin
             responses:
                 "200":
                     description: OK
@@ -149,8 +167,8 @@ paths:
     /v1/documents/categories:
         get:
             tags:
-                - Authorization
-            operationId: Authorization_GetDocumentCategories
+                - Backend
+            operationId: Backend_GetDocumentCategories
             responses:
                 "200":
                     description: OK
@@ -167,8 +185,8 @@ paths:
     /v1/login:
         post:
             tags:
-                - Authorization
-            operationId: Authorization_Login
+                - Backend
+            operationId: Backend_Login
             requestBody:
                 content:
                     application/json:
@@ -191,8 +209,8 @@ paths:
     /v1/sign_up:
         post:
             tags:
-                - Authorization
-            operationId: Authorization_SignUPV1
+                - Backend
+            operationId: Backend_SignUPV1
             requestBody:
                 content:
                     application/json:
@@ -215,8 +233,8 @@ paths:
     /v1/suggest_redirect:
         post:
             tags:
-                - Authorization
-            operationId: Authorization_SendRedirectSuggest
+                - Backend
+            operationId: Backend_SendRedirectSuggest
             requestBody:
                 content:
                     application/json:
@@ -230,6 +248,109 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/SendRedirectSuggestResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/test_stream_client_and_server:
+        post:
+            tags:
+                - Backend
+            operationId: Backend_TestStreamClientAndServer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TestMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TestMessageResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/test_stream_from_client:
+        post:
+            tags:
+                - Backend
+            operationId: Backend_TestStreamFromClient
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TestMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TestMessageResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/test_stream_from_server:
+        post:
+            tags:
+                - Backend
+            operationId: Backend_TestStreamFromServer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TestMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TestMessageResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v2/chats/{chatId}/send:
+        post:
+            tags:
+                - Backend
+            operationId: Backend_SendMessageV2
+            parameters:
+                - name: chatId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint32
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SendMessageRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MessageV2'
                 default:
                     description: Default error response
                     content:
@@ -316,6 +437,13 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Conversation'
+        GetHotThemesResponse:
+            type: object
+            properties:
+                actualThemes:
+                    type: array
+                    items:
+                        type: string
         GoogleProtobufAny:
             type: object
             properties:
@@ -347,6 +475,25 @@ components:
                 sentAt:
                     type: string
                     format: date-time
+        MessageV2:
+            type: object
+            properties:
+                text:
+                    type: string
+                role:
+                    type: integer
+                    format: enum
+                chatId:
+                    type: integer
+                    format: uint32
+                msgId:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: enum
+                errorDetails:
+                    type: string
         NewMessage:
             type: object
             properties:
@@ -408,5 +555,15 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        TestMessageRequest:
+            type: object
+            properties:
+                data:
+                    type: string
+        TestMessageResponse:
+            type: object
+            properties:
+                data:
+                    type: string
 tags:
-    - name: Authorization
+    - name: Backend

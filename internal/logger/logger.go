@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"context"
+	"google.golang.org/grpc/metadata"
 	"gopkg.in/Graylog2/go-gelf.v2/gelf"
 	"io"
 	"log"
@@ -8,21 +10,95 @@ import (
 	"os"
 )
 
-func InitLogger(outputAddr string, environment string) {
+type Options struct {
+	OutputAddr  string
+	Environment string
+	AppName     string
+	LogLevel    slog.Level
+}
+
+var logDisabled = false
+
+func InitLogger(opts Options) {
 	writers := []io.Writer{os.Stdout}
-	log.Printf("environment: %s", environment)
-	if environment == "prod" {
-		writer, err := gelf.NewTCPWriter(outputAddr)
+
+	if opts.OutputAddr != "" {
+		writer, err := gelf.NewTCPWriter(opts.OutputAddr)
 		if err != nil {
 			log.Fatal(err)
 		}
 		writers = append(writers, writer)
 	}
-	handler := slog.NewJSONHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
-		AddSource:   true,
-		ReplaceAttr: nil,
+	var handler slog.Handler = slog.NewJSONHandler(io.MultiWriter(writers...), &slog.HandlerOptions{
+		AddSource: opts.LogLevel == slog.LevelDebug,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == "level" {
+				return slog.Any("log_level", a.Value)
+			}
+			return a
+		},
+		Level: opts.LogLevel,
 	})
 
-	slog.SetDefault(slog.New(handler))
-	log.Printf("Logger initialized with writers: %+v", writers)
+	handler = handler.WithGroup("backend").WithAttrs([]slog.Attr{
+		slog.Any("AppName", opts.AppName),
+		slog.Any("Environment", opts.Environment),
+	})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+	Info(context.Background(), "Logger initialized", "output address", opts.OutputAddr, "log level", opts.LogLevel)
+	Info(context.Background(), "Logger initialized with:", " writers", writers)
+}
+
+type reqIDKey struct{}
+
+var reqIDKeyMD = "request_id"
+
+func WithRequestID(ctx context.Context, requestID string) context.Context {
+	existingMD, _ := metadata.FromOutgoingContext(ctx)
+
+	newMD := metadata.New(map[string]string{
+		reqIDKeyMD: requestID,
+	})
+
+	combinedMD := metadata.Join(existingMD, newMD)
+
+	return metadata.NewOutgoingContext(context.WithValue(ctx, reqIDKey{}, requestID), combinedMD)
+}
+
+func Info(ctx context.Context, msg string, v ...interface{}) {
+	if logDisabled {
+		return
+	}
+	if reqID, ok := ctx.Value(reqIDKey{}).(string); ok {
+		v = append(v, reqIDKeyMD, reqID)
+	} else {
+		// Пытаемся извлечь request_id из метаданных, если он не найден в контексте
+		if md, ok := metadata.FromIncomingContext(ctx); ok {
+			slog.Info("metadata", v...)
+			if requestIDs, ok := md[reqIDKeyMD]; ok && len(requestIDs) > 0 {
+				v = append(v, reqIDKeyMD, requestIDs[0])
+			}
+		}
+	}
+
+	slog.InfoContext(ctx, msg, v...)
+}
+
+func Error(ctx context.Context, msg string, v ...interface{}) {
+	if !logDisabled {
+		return
+	}
+	if reqID, ok := ctx.Value(reqIDKey{}).(string); ok {
+		v = append(v, reqIDKeyMD, reqID)
+	} else {
+		// Пытаемся извлечь request_id из метаданных, если он не найден в контексте
+		if md, ok := metadata.FromIncomingContext(ctx); ok {
+			if requestIDs, ok := md["request-id"]; ok && len(requestIDs) > 0 {
+				v = append(v, reqIDKeyMD, requestIDs[0])
+			}
+		}
+	}
+
+	slog.ErrorContext(ctx, msg, v...)
 }

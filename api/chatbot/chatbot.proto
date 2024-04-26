@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package="mrga/service/chatbot";
+
+// Описание сообщения для истории чата.
+message ChatMessage {
+  string role = 1;  // "user" или "assistant"
+  string text = 2;  // Текст сообщения
+}
+
+// Структура запроса к сервису.
+message ChatRequest {
+  uint32 user_id = 1;          // ID пользователя
+  uint32 chat_id = 2;          // ID чата
+  string user_query = 3;      // Запрос пользователя
+  repeated ChatMessage chat_history = 4;  // История чата
+}
+
+// Структура ответа от сервиса.
+message ChatResponse {
+  uint32 user_id = 1;      // ID пользователя
+  uint32 chat_id = 2;      // ID чата
+  string output = 3;      // Ответ сервиса
+  string role = 4;
+}
+
+// Определение сервиса с потоковым ответом.
+service ChatService {
+  rpc RespondToUserQuery (ChatRequest) returns (stream ChatResponse);
+}

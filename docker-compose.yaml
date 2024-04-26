@@ -10,3 +10,26 @@ services:
       POSTGRES_PASSWORD: qwerty
     ports:
       - "5432:5432"
+    healthcheck:
+      test: pg_isready
+      interval: 10s
+      timeout: 10s
+      retries: 3
+  server:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+    env_file: ".env"
+    ports:
+      - "7001:7001"
+      - "7002:7002"
+  centrifugo:
+    container_name: centrifugo
+    image: centrifugo/centrifugo:v5
+    volumes:
+      - ./centrifugo.dev.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    ports:
+      - "5050:8000"

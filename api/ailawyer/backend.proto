@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package mrga.authorization;
+package mrga.backend;
 
-option go_package="mrga/service/authorization";
+option go_package="mrga/service/backend";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
@@ -68,7 +68,7 @@ option (gnostic.openapi.v3.document) = {
   ];
 };
 
-service Authorization{
+service Backend{
   rpc SignUPV1 (SignUPRequest) returns (SignUPResponse){
     option (google.api.http) = {
       post: "/v1/sign_up"
@@ -115,6 +115,13 @@ service Authorization{
     };
   }
 
+  rpc SendMessageV2(SendMessageRequest) returns (stream MessageV2){
+    option(google.api.http) = {
+      post: "/v2/chats/{chat_id}/send"
+      body: "*"
+    };
+  }
+
   rpc GetDocumentCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
     option(google.api.http) = {
       get: "/v1/documents/categories"
@@ -127,8 +134,49 @@ service Authorization{
       body: "*"
     };
   }
+
+  rpc GetHotThemes(GetHotThemesRequest) returns (GetHotThemesResponse) {
+    option(google.api.http) = {
+      get: "/v1/chat/hot_themes"
+    };
+  }
+
+  rpc TestStreamFromServer(TestMessageRequest) returns (stream TestMessageResponse) {
+    option(google.api.http) = {
+      post: "/v1/test_stream_from_server"
+      body: "*"
+    };
+  }
+
+  rpc TestStreamFromClient(stream TestMessageRequest) returns (TestMessageResponse) {
+    option(google.api.http) = {
+      post: "/v1/test_stream_from_client"
+      body: "*"
+    };
+  }
+
+  rpc TestStreamClientAndServer(stream TestMessageRequest) returns (stream TestMessageResponse) {
+    option(google.api.http) = {
+      post: "/v1/test_stream_client_and_server"
+      body: "*"
+    };
+  }
 }
 
+message TestMessageRequest{
+  string data = 1;
+}
+
+message TestMessageResponse{
+  string data = 1;
+}
+
+message GetHotThemesRequest {
+}
+
+message GetHotThemesResponse {
+  repeated string actualThemes = 1;
+}
 message SendRedirectSuggestRequest{
   uint32 chat_id = 1;
   string action = 2;
@@ -168,9 +216,7 @@ message SendMessageRequest{
   NewMessage msg = 2;
 }
 
-message SendMessageResponse{
-
-}
+message SendMessageResponse{}
 
 message BeginConversationRequest {
   NewMessage msg = 1;
@@ -199,6 +245,28 @@ message Message {
   string message = 1;
   bool from_chatbot = 2;
   google.protobuf.Timestamp sent_at = 3;
+}
+
+// Enum для определения роли сообщения
+enum MessageRole {
+  USER = 0;       // Сообщение от пользователя
+  ASSISTANT = 1;  // Сообщение от ассистента
+  TECHNICAL = 2;  // Техническое сообщение
+}
+
+// Enum для статуса сообщения
+enum MessageStatus {
+  OK = 0;                  // Сообщение обработано без ошибок
+  ERROR = 1;               // Произошла ошибка при обработке сообщения
+}
+
+message MessageV2 {
+  string text = 1; // Текст сообщения
+  MessageRole role = 2; // Роль отправителя сообщения
+  optional uint32 chat_id = 3;
+  optional uint32 msg_id = 4;
+  MessageStatus status = 5;   // Статус сообщения
+  string errorDetails = 6;    // Описание ошибки, если статус == ERROR
 }
 
 message GetConversationRequest{

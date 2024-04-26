@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Yakwilik/MRGAbackend/internal/app/rest"
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -12,7 +11,6 @@ import (
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 )
@@ -29,7 +27,7 @@ type ServiceDesc interface {
 type App struct {
 	desc       ServiceDesc
 	mux        *http.ServeMux
-	publicMux  *runtime.ServeMux
+	gatewayMux *runtime.ServeMux
 	grpcServer *grpc.Server
 	opts       *Options
 	lis        *listeners
@@ -37,6 +35,8 @@ type App struct {
 }
 
 var mdOption = runtime.WithMetadata(func(ctx context.Context, request *http.Request) metadata.MD {
+	existingMD, _ := metadata.FromIncomingContext(ctx)
+
 	outMD := metadata.MD{}
 
 	for key, val := range request.Header {
@@ -44,7 +44,8 @@ var mdOption = runtime.WithMetadata(func(ctx context.Context, request *http.Requ
 			outMD[key] = val
 		}
 	}
-	return outMD
+
+	return metadata.Join(existingMD, outMD)
 })
 
 var headerOption = runtime.WithOutgoingHeaderMatcher(func(s string) (string, bool) {
@@ -72,26 +73,24 @@ func InitApp(opts ...Option) (*App, error) {
 		return nil, err
 	}
 
+	logOptions := logger.Options{
+		OutputAddr:  o.LoggerOutput,
+		Environment: o.Environment,
+		AppName:     o.AppName,
+		LogLevel:    o.LogLevel,
+	}
+	logger.InitLogger(logOptions)
+
 	a := &App{
 		opts: o,
 		wg:   &sync.WaitGroup{},
 	}
-	environment, ok := os.LookupEnv("ENV")
-
-	switch {
-	case environment == "dev":
-	case !ok:
-		environment = "dev"
-	}
-
-	logger.InitLogger(os.Getenv("LOGGER_ADDR"), environment)
 
 	lst, err := newListeners(a.opts)
 	if err != nil {
 		return nil, fmt.Errorf("can't start listeners: %w", err)
 	}
 	a.lis = lst
-	a.initPublicHTTP()
 
 	return a, nil
 }
@@ -104,8 +103,9 @@ func (a *App) Run(impl ...Service) error {
 
 	a.desc = NewCompoundServiceDesc(descs...)
 
-	a.initPublicHTTPHandlers(a.desc)
+	a.initPublicHTTP()
 	a.initGRPCServer(NewCompoundServiceDesc(a.desc))
+	a.initPublicHTTPHandlers(a.desc)
 	a.runPublicHTTP()
 	a.runGRPC()
 	a.wg.Wait()
@@ -115,7 +115,7 @@ func (a *App) runGRPC() {
 	a.wg.Add(1)
 
 	if a.grpcServer != nil {
-		log.Println("running grpc")
+		logger.Info(context.Background(), "running grpc")
 		go func() {
 			defer a.wg.Done()
 			if err := a.grpcServer.Serve(a.lis.grpc); err != nil {
@@ -127,12 +127,14 @@ func (a *App) runGRPC() {
 func (a *App) runPublicHTTP() {
 	a.wg.Add(1)
 
-	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", a.publicMux))
-
-	a.mux.Handle("/api/", http.StripPrefix("/api", rest.New().Init()))
-
+	var h http.Handler = a.mux
+	if a.opts.EnablePublicMuxMiddleware {
+		for _, mw := range a.opts.PublicMuxMiddleware {
+			h = mw(h)
+		}
+	}
 	publicServer := &http.Server{
-		Handler: cors(a.mux),
+		Handler: h,
 	}
 
 	go func() {
@@ -148,21 +150,41 @@ func (a *App) initGRPCServer(desc ServiceDesc) {
 		return
 	}
 
-	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(logInterceptor))
-
+	a.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(LogInterceptor))
 	desc.RegisterGRPC(a.grpcServer)
 	reflection.Register(a.grpcServer)
 }
 
 func (a *App) initPublicHTTPHandlers(desc ServiceDesc) {
 	if desc != nil {
-		if err := desc.RegisterGateway(context.Background(), a.publicMux); err != nil {
+		if err := desc.RegisterGateway(context.Background(), a.gatewayMux); err != nil {
 			log.Fatalf("error while register gateway: %v", err)
 		}
 	}
 }
 
 func (a *App) initPublicHTTP() {
-	a.publicMux = runtime.NewServeMux(a.opts.ServeMuxOpts...)
+	a.gatewayMux = runtime.NewServeMux(a.opts.ServeMuxOpts...)
 	a.mux = http.NewServeMux()
+	if a.opts.EnableCustomHandler {
+		h := a.opts.CustomHandler
+		if a.opts.EnableCustomMuxMiddleware {
+			for _, mw := range a.opts.CustomMuxMiddleware {
+				if mw != nil {
+					h = mw(h)
+				}
+			}
+		}
+		a.mux.Handle("/api/", http.StripPrefix("/api", h))
+	}
+
+	var gatewayMux http.Handler = a.gatewayMux
+	if a.opts.EnableGatewayMiddleware {
+		for _, mw := range a.opts.GatewayMiddleware {
+			if mw != nil {
+				gatewayMux = mw(gatewayMux)
+			}
+		}
+	}
+	a.mux.Handle("/api/gateway/", http.StripPrefix("/api/gateway", gatewayMux))
 }
