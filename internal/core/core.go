@@ -3,9 +3,11 @@ package core
 import (
 	"context"
 	"errors"
+	"github.com/Yakwilik/MRGAbackend/internal/client/ai_botV2"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	storagePkg "github.com/Yakwilik/MRGAbackend/internal/storage"
 	"strings"
+	"time"
 )
 
 type UseCase interface {
@@ -13,6 +15,7 @@ type UseCase interface {
 	Login(ctx context.Context, user model.User) (string, error)
 	CheckLogin(ctx context.Context, sessionID string) (string, error)
 	BeginConversation(ctx context.Context, userEmail string) (uint32, error)
+	BeginConversationV2(ctx context.Context, userEmail string, userMessage string) (<-chan *model.ChatResponseChunk, error)
 	SendMessage(ctx context.Context, data model.CreateMessageData) error
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
 	GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error)
@@ -20,10 +23,14 @@ type UseCase interface {
 
 type usecase struct {
 	storage storagePkg.Interface
+	aiBot   ai_botV2.Interface
 }
 
-func New(session storagePkg.Interface) UseCase {
-	return &usecase{storage: session}
+func New(session storagePkg.Interface, aiBot ai_botV2.Interface) UseCase {
+	return &usecase{
+		storage: session,
+		aiBot:   aiBot,
+	}
 }
 
 func (a *usecase) SignUp(ctx context.Context, user model.User) error {
@@ -87,4 +94,57 @@ func (a *usecase) GetConversations(ctx context.Context, userEmail string) ([]mod
 
 func (a *usecase) GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error) {
 	return a.storage.GetConversation(ctx, chatID)
+}
+
+func (a *usecase) BeginConversationV2(ctx context.Context, userEmail string, userMessage string) (<-chan *model.ChatResponseChunk, error) {
+	chatID, err := a.storage.CreateConversation(ctx, userEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := a.SendMessage(ctx, model.CreateMessageData{
+		ChatID:  chatID,
+		SentAt:  time.Now(),
+		FromBot: false,
+		Message: userMessage,
+	}); err != nil {
+		return nil, err
+	}
+
+	respChan, err := a.aiBot.RespondToUserQuery(ctx, model.ChatRequest{
+		ChatID:      chatID,
+		UserQuery:   userMessage,
+		ChatHistory: []model.HistoryMessage{},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	resultChan := make(chan *model.ChatResponseChunk)
+
+	go func() {
+		result := strings.Builder{}
+		defer close(resultChan)
+		defer a.SendMessage(ctx, model.CreateMessageData{
+			ChatID:  chatID,
+			SentAt:  time.Now(),
+			FromBot: true,
+			Message: result.String(),
+		})
+
+		for part := range respChan {
+			select {
+			case <-ctx.Done():
+				return
+			case resultChan <- part:
+				if part.MessageStatus == model.StatusOk && part.Role == model.RoleAssistant {
+					result.WriteString(part.Chunk)
+				}
+			}
+		}
+
+	}()
+
+	return resultChan, nil
+
 }

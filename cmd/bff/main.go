@@ -41,10 +41,10 @@ func main() {
 	}
 	storage := storagePkg.New(db)
 
-	core := core.New(storage)
 	aiBotService := ai_botV2.MustNew(ai_botV2.Config{
 		ServiceAddr: cfg.ChatBotServiceAddr(ctx),
 	})
+	core := core.New(storage, aiBotService)
 	app.WithCustomRestHandler(rest.New(core, aiBotService).Init()).
 		WithPublicMuxMiddleware(scratch.LoggingMiddleware).
 		WithCustomRestMiddleware(func(handler http.Handler) http.Handler {
