@@ -125,12 +125,14 @@ func (a *usecase) BeginConversationV2(ctx context.Context, userEmail string, use
 	go func() {
 		result := strings.Builder{}
 		defer close(resultChan)
-		defer a.SendMessage(ctx, model.CreateMessageData{
-			ChatID:  chatID,
-			SentAt:  time.Now(),
-			FromBot: true,
-			Message: result.String(),
-		})
+		defer func() {
+			a.SendMessage(ctx, model.CreateMessageData{
+				ChatID:  chatID,
+				SentAt:  time.Now(),
+				FromBot: true,
+				Message: result.String(),
+			})
+		}()
 
 		for part := range respChan {
 			select {

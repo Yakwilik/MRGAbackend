@@ -63,9 +63,10 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 	//	//	ErrorDetails:  "",
 	//	//},
 	//}
-	//for i := 0; i < 500; i++ {
+	//for i := 0; i < 50; i++ {
 	//	//for i, d := range mockResp {
 	//	mockResp = append(mockResp, model.ChatResponseChunk{
+	//		ChatID:        request.ChatID,
 	//		Role:          model.RoleAssistant,
 	//		Chunk:         fmt.Sprintf("сообщение%d", i),
 	//		MessageStatus: model.StatusOk,
@@ -91,6 +92,7 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 					Chunk:         "Произошла ошибка, попробуйте повторить запрос",
 					MessageStatus: model.StatusFail,
 					ErrorDetails:  err.Error(),
+					ChatID:        request.ChatID,
 				}
 				break
 			}
@@ -100,7 +102,7 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 				Chunk:         response.GetOutput(),
 				MessageStatus: model.StatusOk,
 				UserID:        response.GetUserId(),
-				ChatID:        response.GetChatId(),
+				ChatID:        request.ChatID,
 			}
 			//responseChan <- &response
 		}
