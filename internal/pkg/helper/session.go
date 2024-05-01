@@ -3,7 +3,6 @@ package helper
 import (
 	"context"
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"log/slog"
 	"net/http"
@@ -42,9 +41,9 @@ const sessionKey = "session_id"
 
 func SessionIDFromContextMD(ctx context.Context) (string, bool) {
 	md, _ := metadata.FromIncomingContext(ctx)
-	cookie := md.Get("Cookie")
+	cookies := md.Get("cookie")
 
-	request := http.Request{Header: http.Header{"Cookie": cookie}}
+	request := http.Request{Header: http.Header{"Cookie": cookies}}
 	sessionCookie, err := request.Cookie(sessionKey)
 	if err != nil {
 		slog.Error(err.Error())
@@ -54,20 +53,21 @@ func SessionIDFromContextMD(ctx context.Context) (string, bool) {
 	return sessionCookie.Value, true
 }
 
-func SetSessionID(ctx context.Context, domain, sessionID string) {
-	c := http.Cookie{
-		Name:     sessionKey,
-		Value:    sessionID,
+func cookie(name string, value string, expires time.Time) http.Cookie {
+	return http.Cookie{
+		Name:     name,
 		Path:     "/",
-		Domain:   domain,
-		Expires:  time.Now().Add(time.Hour * 24),
+		Value:    value,
+		Expires:  expires,
 		Secure:   secure(),
 		HttpOnly: true,
 		SameSite: samesiteMode(),
 	}
+}
 
-	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{
-		"Set-Cookie": c.String(),
-	}))
+func GetSessionCookie(domain, sessionID string, expires time.Time) http.Cookie {
+	c := cookie(sessionKey, sessionID, expires)
+	c.Domain = domain
 
+	return c
 }

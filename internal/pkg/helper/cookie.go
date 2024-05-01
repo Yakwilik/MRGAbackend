@@ -20,16 +20,16 @@ func GetValueCookie(r *http.Request, nameCookie string) (string, error) {
 
 type userKey struct{}
 
-var ContextUserKey userKey = userKey{}
+var contextUserKey userKey = userKey{}
+
+type sessionData struct {
+	Email     string
+	SessionID string
+}
 
 func AuthMiddleware(core core.UseCase, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		connectRequest := strings.Contains(r.RequestURI, "connect")
-		//if connectRequest {
-		//	ctx := context.WithValue(r.Context(), ContextUserKey, "khas.2015@gmail.com")
-		//	next.ServeHTTP(w, r.WithContext(ctx))
-		//	return
-		//}
 
 		token, err := GetValueCookie(r, sessionKey)
 		if err != nil {
@@ -54,17 +54,30 @@ func AuthMiddleware(core core.UseCase, next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ContextUserKey, email)
+		ctx := context.WithValue(r.Context(), contextUserKey, sessionData{
+			Email:     email,
+			SessionID: token,
+		})
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 func GetEmailFromContext(ctx context.Context) (string, error) {
-	v := ctx.Value(ContextUserKey)
-	email, ok := v.(string)
+	v := ctx.Value(contextUserKey)
+	sessionDataValue, ok := v.(sessionData)
 	if !ok {
 		return "", model.ErrNotFound
 	}
 
-	return email, nil
+	return sessionDataValue.Email, nil
+}
+
+func GetSessionIDFromContext(ctx context.Context) (string, error) {
+	v := ctx.Value(contextUserKey)
+	sessionDataValue, ok := v.(sessionData)
+	if !ok {
+		return "", model.ErrNotFound
+	}
+
+	return sessionDataValue.SessionID, nil
 }

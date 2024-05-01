@@ -45,7 +45,7 @@ func main() {
 		ServiceAddr: cfg.ChatBotServiceAddr(ctx),
 	})
 	core := core.New(storage, aiBotService)
-	app.WithCustomRestHandler(rest.New(core, aiBotService).Init()).
+	app.WithCustomRestHandler(rest.New(cfg, core, aiBotService).Init()).
 		WithPublicMuxMiddleware(scratch.LoggingMiddleware).
 		WithCustomRestMiddleware(func(handler http.Handler) http.Handler {
 			return helper.AuthMiddleware(core, handler)

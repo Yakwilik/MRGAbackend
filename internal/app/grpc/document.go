@@ -69,6 +69,20 @@ func (a *Implementation) GetDocumentCategories(ctx context.Context, request *pb.
 				},
 			},
 		},
+		{
+			CategoryName: "Трудовое право",
+			DocumentTypes: []*pb.DocumentType{
+				{
+					Type: "Заявление об увольнении",
+					Variants: []*pb.DocumentVariant{
+						{
+							Key:  "voluntaryDismissal",
+							Name: "Заявление об увольнении по собственному желанию",
+						},
+					},
+				},
+			},
+		},
 	}
 
 	return &pb.GetCategoriesResponse{Categories: categories}, nil

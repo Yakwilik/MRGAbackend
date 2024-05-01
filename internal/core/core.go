@@ -14,6 +14,7 @@ type UseCase interface {
 	SignUp(ctx context.Context, user model.User) error
 	Login(ctx context.Context, user model.User) (string, error)
 	CheckLogin(ctx context.Context, sessionID string) (string, error)
+	DeleteSession(ctx context.Context, sessionID string) error
 	BeginConversation(ctx context.Context, userEmail string) (uint32, error)
 	BeginConversationV2(ctx context.Context, userEmail string, userMessage string) (<-chan *model.ChatResponseChunk, error)
 	SendMessage(ctx context.Context, data model.CreateMessageData) error
@@ -148,5 +149,8 @@ func (a *usecase) BeginConversationV2(ctx context.Context, userEmail string, use
 	}()
 
 	return resultChan, nil
+}
 
+func (a *usecase) DeleteSession(ctx context.Context, sessionID string) error {
+	return a.storage.DeleteSession(ctx, sessionID)
 }

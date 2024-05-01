@@ -14,6 +14,7 @@ import (
 
 type Interface interface {
 	CreateSession(ctx context.Context, user model.User) (string, error)
+	DeleteSession(ctx context.Context, sessionID string) error
 	GetEmailBySession(ctx context.Context, sessionID string) (string, error)
 	CreateUser(ctx context.Context, user model.User) error
 	CreateConversation(ctx context.Context, userEmail string) (uint32, error)
@@ -216,6 +217,14 @@ func (s *storage) CheckCredentials(ctx context.Context, user model.User) error {
 
 	if !exists {
 		return model.ErrBadCredentials
+	}
+
+	return nil
+}
+
+func (s *storage) DeleteSession(ctx context.Context, sessionID string) error {
+	if _, err := s.db.Exec("DELETE FROM session WHERE session_id = $1", sessionID); err != nil {
+		return fmt.Errorf("error executing query [DeleteSession]: %w", err)
 	}
 
 	return nil

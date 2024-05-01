@@ -7,8 +7,11 @@ import (
 	pb "github.com/Yakwilik/MRGAbackend/internal/pb/ailawyer"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 func (a *Implementation) SignUPV1(ctx context.Context, req *pb.SignUPRequest) (*pb.SignUPResponse, error) {
@@ -35,7 +38,10 @@ func (a *Implementation) SignUPV1(ctx context.Context, req *pb.SignUPRequest) (*
 		return nil, err
 	}
 
-	helper.SetSessionID(ctx, a.cfg.Domain(ctx), sessionID)
+	c := helper.GetSessionCookie(a.cfg.Domain(ctx), sessionID, time.Now().Add(time.Hour*24))
+	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{
+		"Set-cookie": c.String(),
+	}))
 
 	return &pb.SignUPResponse{Email: req.GetEmail().GetValue()}, nil
 }
@@ -72,7 +78,10 @@ func (a *Implementation) Login(ctx context.Context, req *pb.LoginRequest) (*pb.L
 		return nil, err
 	}
 
-	helper.SetSessionID(ctx, a.cfg.Domain(ctx), sessionID)
+	c := helper.GetSessionCookie(a.cfg.Domain(ctx), sessionID, time.Now().Add(time.Hour*24))
+	_ = grpc.SendHeader(ctx, metadata.New(map[string]string{
+		"Set-cookie": c.String(),
+	}))
 
 	return &pb.LoginResponse{Email: req.GetEmail().GetValue()}, nil
 }
