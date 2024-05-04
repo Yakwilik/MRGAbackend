@@ -2,13 +2,18 @@ package ai_botV2
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	pb "github.com/Yakwilik/MRGAbackend/internal/pb/chatbot"
+	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"io"
 	"log"
+	"math/big"
+	"time"
 )
 
 type client interface {
@@ -37,48 +42,77 @@ func MustNew(cfg Config) Interface {
 	}
 }
 
+func GenerateRandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	result := make([]byte, length)
+	charsetLen := big.NewInt(int64(len(charset)))
+
+	for i := range result {
+		randomIndex, _ := rand.Int(rand.Reader, charsetLen)
+		result[i] = charset[randomIndex.Int64()]
+	}
+
+	return string(result)
+}
+
+func mockResponse(config *helper.MockResponseConfig) (<-chan *model.ChatResponseChunk, error) {
+	if config.IterationCount == 0 {
+		config.IterationCount = 50
+	}
+	if config.IterationCount < 0 {
+		config.IterationCount = -config.IterationCount
+	}
+	if config.BatchSize == 0 {
+		config.BatchSize = 50
+	}
+	if config.BatchSize < 0 {
+		config.BatchSize = -config.BatchSize
+	}
+	if config.IterationTimeout < time.Millisecond*10 {
+		config.IterationTimeout = time.Millisecond * 10
+	}
+	if config.IterationTimeout.Milliseconds()*int64(config.IterationCount) > time.Minute.Milliseconds() {
+		config.IterationTimeout = time.Minute
+	}
+
+	responseChan := make(chan *model.ChatResponseChunk)
+	go func() {
+		defer close(responseChan)
+
+		ticker := time.NewTicker(config.IterationTimeout)
+		defer ticker.Stop()
+
+		for i := 0; i < config.IterationCount; i++ {
+			select {
+			case <-ticker.C:
+				responseChan <- &model.ChatResponseChunk{
+					Role:          model.RoleAssistant,
+					Chunk:         fmt.Sprintf("%sсообщение%d", GenerateRandomString(config.BatchSize), i),
+					MessageStatus: model.StatusOk,
+				}
+			}
+
+		}
+	}()
+
+	return responseChan, nil
+}
+
 func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatRequest) (<-chan *model.ChatResponseChunk, error) {
+	responseChan := make(chan *model.ChatResponseChunk)
+
+	mockConfig, ok := helper.GetMockResponseConfig(ctx)
+	if ok && mockConfig.Generate {
+		return mockResponse(mockConfig)
+	}
 	data := encodeRespondToUserQuery(request)
 	grpcStream, err := a.cli.RespondToUserQuery(ctx, data)
 	if err != nil {
 		return nil, err
 	}
-	//mockResp := []model.ChatResponseChunk{
-	//	//{
-	//	//	Role:          model.RoleAssistant,
-	//	//	Chunk:         "Привет; Спасибо, что пишешь мне",
-	//	//	MessageStatus: model.StatusOk,
-	//	//	ErrorDetails:  "",
-	//	//},
-	//	//{
-	//	//	Role:          model.RoleAssistant,
-	//	//	Chunk:         "Привет2; Спасибо, что пишешь мне",
-	//	//	MessageStatus: model.StatusOk,
-	//	//	ErrorDetails:  "",
-	//	//},
-	//	//{
-	//	//	Role:          model.RoleAssistant,
-	//	//	Chunk:         "сообщение",
-	//	//	MessageStatus: model.StatusOk,
-	//	//	ErrorDetails:  "",
-	//	//},
-	//}
-	//for i := 0; i < 50; i++ {
-	//	//for i, d := range mockResp {
-	//	mockResp = append(mockResp, model.ChatResponseChunk{
-	//		ChatID:        request.ChatID,
-	//		Role:          model.RoleAssistant,
-	//		Chunk:         fmt.Sprintf("сообщение%d", i),
-	//		MessageStatus: model.StatusOk,
-	//		ErrorDetails:  "",
-	//	})
-	//	//}
-	//}
 
-	responseChan := make(chan *model.ChatResponseChunk)
 	go func() {
 		defer close(responseChan)
-		//for _, response := range mockResp {
 		for {
 			response, err := grpcStream.Recv()
 			if err == io.EOF {
@@ -104,7 +138,6 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 				UserID:        response.GetUserId(),
 				ChatID:        request.ChatID,
 			}
-			//responseChan <- &response
 		}
 	}()
 	return responseChan, nil

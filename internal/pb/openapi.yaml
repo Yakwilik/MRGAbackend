@@ -391,6 +391,8 @@ components:
                 chatId:
                     type: integer
                     format: uint32
+                chatName:
+                    type: string
         DocumentCategory:
             type: object
             properties:

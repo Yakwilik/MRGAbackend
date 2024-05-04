@@ -27,3 +27,10 @@ var (
 func (r MessageStatus) String() string {
 	return string(r)
 }
+
+func GetRole(fromChatBot bool) Role {
+	if fromChatBot {
+		return RoleAssistant
+	}
+	return RoleUser
+}

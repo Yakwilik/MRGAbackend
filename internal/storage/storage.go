@@ -22,6 +22,7 @@ type Interface interface {
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
 	GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error)
 	CheckCredentials(ctx context.Context, user model.User) error
+	SetChatName(ctx context.Context, chatID uint32, name string) error
 }
 
 type storage struct {
@@ -89,13 +90,9 @@ func (s *storage) CreateUser(ctx context.Context, user model.User) error {
 }
 
 func (s *storage) CreateConversation(ctx context.Context, userEmail string) (uint32, error) {
-	row := s.db.QueryRow("insert into chats (email) values ($1) returning chat_id;", userEmail)
-	if err := row.Err(); err != nil {
-		return 0, fmt.Errorf("error executing query [CreateConversation]: %w", err)
-	}
-
 	var insertedID uint32
-	if err := row.Scan(&insertedID); err != nil {
+	if err := s.db.QueryRow("insert into chats (email) values ($1) returning chat_id;", userEmail).
+		Scan(&insertedID); err != nil {
 		return 0, fmt.Errorf("error executing query [CreateConversation]: %w", err)
 	}
 
@@ -112,6 +109,7 @@ func (s *storage) CreateMessage(ctx context.Context, data model.CreateMessageDat
 }
 
 type conversationData struct {
+	ChatName    string    `db:"chat_name"`
 	LastMessage string    `db:"last_message"`
 	FromChatBot bool      `db:"from_bot"`
 	SentAt      time.Time `db:"sent_at"`
@@ -121,6 +119,7 @@ type conversationData struct {
 func (s *storage) GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error) {
 	rows, err := s.db.Query(`
 SELECT DISTINCT c.chat_id,
+                c.chat_name as chat_name,
                 m.message AS last_message,
                 m.sent_at AS sent_at,
 				m.from_bot AS from_bot
@@ -155,6 +154,7 @@ func decodeConversations(dbData []conversationData) []model.ConversationData {
 	result := make([]model.ConversationData, 0, len(dbData))
 	for _, dbModel := range dbData {
 		result = append(result, model.ConversationData{
+			ChatName:    dbModel.ChatName,
 			LastMessage: dbModel.LastMessage,
 			FromChatBot: dbModel.FromChatBot,
 			SentAt:      dbModel.SentAt,
@@ -225,6 +225,14 @@ func (s *storage) CheckCredentials(ctx context.Context, user model.User) error {
 func (s *storage) DeleteSession(ctx context.Context, sessionID string) error {
 	if _, err := s.db.Exec("DELETE FROM session WHERE session_id = $1", sessionID); err != nil {
 		return fmt.Errorf("error executing query [DeleteSession]: %w", err)
+	}
+
+	return nil
+}
+
+func (s *storage) SetChatName(ctx context.Context, chatID uint32, name string) error {
+	if _, err := s.db.Exec("UPDATE chats SET chat_name = $1 WHERE chat_id = $2", name, chatID); err != nil {
+		return fmt.Errorf("error executing query [SetChatName]: %w", err)
 	}
 
 	return nil

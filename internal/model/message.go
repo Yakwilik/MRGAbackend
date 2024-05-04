@@ -10,6 +10,7 @@ type CreateMessageData struct {
 }
 
 type ConversationData struct {
+	ChatName    string
 	LastMessage string
 	FromChatBot bool
 	SentAt      time.Time

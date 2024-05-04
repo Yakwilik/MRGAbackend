@@ -1,9 +1,11 @@
 -- +goose Up
 -- +goose StatementBegin
-SELECT 'up SQL query';
+ALTER TABLE chats
+    ADD COLUMN chat_name TEXT NOT NULL DEFAULT ''::TEXT;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+ALTER TABLE chats
+DROP COLUMN chat_name;
 -- +goose StatementEnd

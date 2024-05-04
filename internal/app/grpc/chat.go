@@ -61,6 +61,7 @@ func encodeConversations(data []model.ConversationData) []*pb.Conversation {
 
 	for _, conv := range data {
 		result = append(result, &pb.Conversation{
+			ChatName:    conv.ChatName,
 			LastMessage: conv.LastMessage,
 			FromChatbot: conv.FromChatBot,
 			SentAt:      timestamppb.New(conv.SentAt),

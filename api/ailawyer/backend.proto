@@ -235,6 +235,7 @@ message Conversation {
   bool from_chatbot = 2;
   google.protobuf.Timestamp sent_at = 3;
   uint32 chat_id = 4;
+  string chat_name = 5;
 }
 
 message GetConversationsResponse{

@@ -7,7 +7,7 @@ import (
 	"github.com/Yakwilik/MRGAbackend/internal/client/ai_bot"
 	"github.com/Yakwilik/MRGAbackend/internal/client/ai_botV2"
 	"github.com/Yakwilik/MRGAbackend/internal/config"
-	"github.com/Yakwilik/MRGAbackend/internal/core"
+	corePkg "github.com/Yakwilik/MRGAbackend/internal/core"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/scratch"
 	storagePkg "github.com/Yakwilik/MRGAbackend/internal/storage"
@@ -44,11 +44,11 @@ func main() {
 	aiBotService := ai_botV2.MustNew(ai_botV2.Config{
 		ServiceAddr: cfg.ChatBotServiceAddr(ctx),
 	})
-	core := core.New(storage, aiBotService)
+	core := corePkg.New(storage, aiBotService)
 	app.WithCustomRestHandler(rest.New(cfg, core, aiBotService).Init()).
-		WithPublicMuxMiddleware(scratch.LoggingMiddleware).
+		WithPublicMuxMiddleware(helper.HelperMiddleware, scratch.LoggingMiddleware).
 		WithCustomRestMiddleware(func(handler http.Handler) http.Handler {
-			return helper.AuthMiddleware(core, handler)
+			return corePkg.AuthMiddleware(core, handler)
 		}).WithPublicMuxMiddleware(scratch.CorsMiddleware)
 
 	if err := app.Run(grpc.NewBackend(grpc.Config{

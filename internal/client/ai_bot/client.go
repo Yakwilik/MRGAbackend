@@ -60,13 +60,12 @@ func (c *clientImpl) SendPromptWithContext(ctx context.Context, prompt promptMod
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
 
-	logger.Info(ctx, "client", "SendPromptWithContext", "statusCode: ", resp.StatusCode, "err:", err)
+	logger.Info(ctx, "client", "method", "SendPromptWithContext", "statusCode", resp.StatusCode, "err:", err)
 	decodedResp := response{}
 	if resp.StatusCode == http.StatusForbidden {
 		return response{}, errors.New("forbidden")
 	}
-	err = json.NewDecoder(resp.Body).Decode(&decodedResp)
-	if err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
 		return response{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
 

@@ -37,14 +37,14 @@ func init() {
 	logger.Info(context.Background(), "samesite: ", "mode:", samesiteMode())
 }
 
-const sessionKey = "session_id"
+const SessionKey = "session_id"
 
 func SessionIDFromContextMD(ctx context.Context) (string, bool) {
 	md, _ := metadata.FromIncomingContext(ctx)
 	cookies := md.Get("cookie")
 
 	request := http.Request{Header: http.Header{"Cookie": cookies}}
-	sessionCookie, err := request.Cookie(sessionKey)
+	sessionCookie, err := request.Cookie(SessionKey)
 	if err != nil {
 		slog.Error(err.Error())
 		return "", false
@@ -66,7 +66,7 @@ func cookie(name string, value string, expires time.Time) http.Cookie {
 }
 
 func GetSessionCookie(domain, sessionID string, expires time.Time) http.Cookie {
-	c := cookie(sessionKey, sessionID, expires)
+	c := cookie(SessionKey, sessionID, expires)
 	c.Domain = domain
 
 	return c
