@@ -12,9 +12,10 @@ func (r Role) String() string {
 }
 
 var (
-	RoleUser      Role = "user"
-	RoleAssistant Role = "assistant"
-	RoleTechnical Role = "technical"
+	RoleUser             Role = "user"
+	RoleAssistant        Role = "assistant"
+	RoleTechnical        Role = "technical"
+	RoleDocumentRedirect Role = "document_redirect"
 )
 
 type MessageStatus string

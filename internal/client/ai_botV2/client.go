@@ -55,7 +55,7 @@ func GenerateRandomString(length int) string {
 	return string(result)
 }
 
-func mockResponse(config *helper.MockResponseConfig) (<-chan *model.ChatResponseChunk, error) {
+func mockResponse(config *helper.MockResponseConfig, chatID uint32) (<-chan *model.ChatResponseChunk, error) {
 	if config.IterationCount == 0 {
 		config.IterationCount = 50
 	}
@@ -89,6 +89,7 @@ func mockResponse(config *helper.MockResponseConfig) (<-chan *model.ChatResponse
 					Role:          model.RoleAssistant,
 					Chunk:         fmt.Sprintf("%sсообщение%d", GenerateRandomString(config.BatchSize), i),
 					MessageStatus: model.StatusOk,
+					ChatID:        chatID,
 				}
 			}
 
@@ -103,7 +104,7 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 
 	mockConfig, ok := helper.GetMockResponseConfig(ctx)
 	if ok && mockConfig.Generate {
-		return mockResponse(mockConfig)
+		return mockResponse(mockConfig, request.ChatID)
 	}
 	data := encodeRespondToUserQuery(request)
 	grpcStream, err := a.cli.RespondToUserQuery(ctx, data)

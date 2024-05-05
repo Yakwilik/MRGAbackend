@@ -7,6 +7,7 @@ type CreateMessageData struct {
 	SentAt  time.Time
 	FromBot bool
 	Message string
+	Role    Role
 }
 
 type ConversationData struct {
@@ -15,12 +16,14 @@ type ConversationData struct {
 	FromChatBot bool
 	SentAt      time.Time
 	ChatID      uint32
+	Role        Role
 }
 
 type Message struct {
 	Message     string
 	FromChatBot bool
 	SentAt      time.Time
+	Role        Role
 }
 
 type HistoryMessage struct {

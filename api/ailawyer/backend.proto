@@ -94,6 +94,7 @@ service Backend{
       post: "/v1/chat/begin"
       body: "*"
     };
+    option deprecated = true;
   }
 
   rpc GetConversations(GetConversationsRequest) returns (GetConversationsResponse) {
@@ -113,6 +114,7 @@ service Backend{
       post: "/v1/chats/{chat_id}/send"
       body: "*"
     };
+    option deprecated = true;
   }
 
   rpc SendMessageV2(SendMessageRequest) returns (stream MessageV2){
@@ -120,6 +122,7 @@ service Backend{
       post: "/v2/chats/{chat_id}/send"
       body: "*"
     };
+    option deprecated = true;
   }
 
   rpc GetDocumentCategories(GetCategoriesRequest) returns (GetCategoriesResponse) {
@@ -236,6 +239,7 @@ message Conversation {
   google.protobuf.Timestamp sent_at = 3;
   uint32 chat_id = 4;
   string chat_name = 5;
+  MessageRole role = 6;
 }
 
 message GetConversationsResponse{
@@ -246,13 +250,15 @@ message Message {
   string message = 1;
   bool from_chatbot = 2;
   google.protobuf.Timestamp sent_at = 3;
+  MessageRole role = 4;
 }
 
 // Enum для определения роли сообщения
 enum MessageRole {
-  USER = 0;       // Сообщение от пользователя
-  ASSISTANT = 1;  // Сообщение от ассистента
-  TECHNICAL = 2;  // Техническое сообщение
+  user = 0;       // Сообщение от пользователя
+  assistant = 1;  // Сообщение от ассистента
+  technical = 2;  // Техническое сообщение
+  document_redirect = 3; // Сообщение о том, что нужно переадресовать пользователя на страницу конструктора документов
 }
 
 // Enum для статуса сообщения

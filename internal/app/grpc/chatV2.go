@@ -92,9 +92,10 @@ func getRole(fromChatBot bool) model.Role {
 }
 
 var protoRole = map[model.Role]pb.MessageRole{
-	model.RoleUser:      pb.MessageRole_USER,
-	model.RoleAssistant: pb.MessageRole_ASSISTANT,
-	model.RoleTechnical: pb.MessageRole_TECHNICAL,
+	model.RoleUser:             pb.MessageRole_user,
+	model.RoleAssistant:        pb.MessageRole_assistant,
+	model.RoleTechnical:        pb.MessageRole_technical,
+	model.RoleDocumentRedirect: pb.MessageRole_document_redirect,
 }
 
 var protoStatus = map[model.MessageStatus]pb.MessageStatus{

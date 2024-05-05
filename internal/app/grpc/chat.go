@@ -64,6 +64,7 @@ func encodeConversations(data []model.ConversationData) []*pb.Conversation {
 			ChatName:    conv.ChatName,
 			LastMessage: conv.LastMessage,
 			FromChatbot: conv.FromChatBot,
+			Role:        protoRole[conv.Role],
 			SentAt:      timestamppb.New(conv.SentAt),
 			ChatId:      conv.ChatID,
 		})
@@ -95,6 +96,7 @@ func encodeMessages(data []model.Message) []*pb.Message {
 			Message:     conv.Message,
 			FromChatbot: conv.FromChatBot,
 			SentAt:      timestamppb.New(conv.SentAt),
+			Role:        protoRole[conv.Role],
 		})
 	}
 
@@ -163,7 +165,9 @@ func (a *Implementation) SendMessage(ctx context.Context, request *pb.SendMessag
 
 func (a *Implementation) GetHotThemes(ctx context.Context, request *pb.GetHotThemesRequest) (*pb.GetHotThemesResponse, error) {
 	return &pb.GetHotThemesResponse{ActualThemes: []string{
-		"Как отсудить свое имущество при развод",
-		"Что делать, если жена не дает развод",
+		//"Как отсудить свое имущество при развод",
+		//"Что делать, если жена не дает развод",
+		"Как уйти с работы по собственному желанию?",
+		"Как продать квартиру?",
 	}}, nil
 }

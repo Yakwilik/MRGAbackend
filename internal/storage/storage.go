@@ -101,7 +101,7 @@ func (s *storage) CreateConversation(ctx context.Context, userEmail string) (uin
 }
 
 func (s *storage) CreateMessage(ctx context.Context, data model.CreateMessageData) error {
-	_, err := s.db.Exec("insert into messages (chat_id, sent_at, message, from_bot) VALUES ($1, $2, $3, $4)", data.ChatID, data.SentAt, data.Message, data.FromBot)
+	_, err := s.db.Exec("insert into messages (chat_id, sent_at, message, from_bot, role) VALUES ($1, $2, $3, $4, $5)", data.ChatID, data.SentAt, data.Message, data.FromBot, data.Role)
 	if err != nil {
 		return fmt.Errorf("error executing query [CreateMessage]: %w", err)
 	}
@@ -110,11 +110,12 @@ func (s *storage) CreateMessage(ctx context.Context, data model.CreateMessageDat
 }
 
 type conversationData struct {
-	ChatName    string    `db:"chat_name"`
-	LastMessage string    `db:"last_message"`
-	FromChatBot bool      `db:"from_bot"`
-	SentAt      time.Time `db:"sent_at"`
-	ChatID      uint32    `db:"chat_id"`
+	ChatName    string     `db:"chat_name"`
+	LastMessage string     `db:"last_message"`
+	FromChatBot bool       `db:"from_bot"`
+	SentAt      time.Time  `db:"sent_at"`
+	ChatID      uint32     `db:"chat_id"`
+	Role        model.Role `db:"role"`
 }
 
 func (s *storage) GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error) {
@@ -123,13 +124,15 @@ SELECT DISTINCT c.chat_id,
                 c.chat_name as chat_name,
                 m.message AS last_message,
                 m.sent_at AS sent_at,
-				m.from_bot AS from_bot
+				m.from_bot AS from_bot,
+				m.role AS role
 FROM chats c
          INNER JOIN
      (SELECT chat_id,
              message,
              sent_at,
-             from_bot
+             from_bot,
+             role
       FROM messages
       WHERE (chat_id, sent_at) IN (SELECT chat_id, MAX(sent_at) AS sent_at
                                    FROM messages
@@ -160,6 +163,7 @@ func decodeConversations(dbData []conversationData) []model.ConversationData {
 			FromChatBot: dbModel.FromChatBot,
 			SentAt:      dbModel.SentAt,
 			ChatID:      dbModel.ChatID,
+			Role:        dbModel.Role,
 		})
 	}
 
@@ -167,16 +171,18 @@ func decodeConversations(dbData []conversationData) []model.ConversationData {
 }
 
 type message struct {
-	Message     string    `db:"message"`
-	FromChatBot bool      `db:"from_bot"`
-	SentAt      time.Time `db:"sent_at"`
+	Message     string     `db:"message"`
+	FromChatBot bool       `db:"from_bot"`
+	SentAt      time.Time  `db:"sent_at"`
+	Role        model.Role `db:"role"`
 }
 
 func (s *storage) GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error) {
 	rows, err := s.db.Query(`
 SELECT message,
        sent_at,
-       from_bot
+       from_bot,
+       role
 FROM messages
 WHERE chat_id = $1
 ORDER BY sent_at ASC;`, chatID)
@@ -209,6 +215,7 @@ func decodeMessages(dbMessages []message) []model.Message {
 			Message:     dbModel.Message,
 			FromChatBot: dbModel.FromChatBot,
 			SentAt:      dbModel.SentAt,
+			Role:        dbModel.Role,
 		})
 	}
 

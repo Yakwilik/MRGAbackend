@@ -393,6 +393,9 @@ components:
                     format: uint32
                 chatName:
                     type: string
+                role:
+                    type: integer
+                    format: enum
         DocumentCategory:
             type: object
             properties:
@@ -479,6 +482,9 @@ components:
                 sentAt:
                     type: string
                     format: date-time
+                role:
+                    type: integer
+                    format: enum
         MessageV2:
             type: object
             properties:

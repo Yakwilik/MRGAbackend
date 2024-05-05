@@ -136,6 +136,7 @@ func (a *usecase) BeginConversationV2(ctx context.Context, userEmail string, use
 		ChatID:  chatID,
 		SentAt:  time.Now(),
 		FromBot: false,
+		Role:    model.RoleUser,
 		Message: userMessage,
 	}); err != nil {
 		return nil, fmt.Errorf("BeginConversationV2: a.SendMessage: %w", err)
@@ -186,6 +187,7 @@ func (a *usecase) streamResponseFromBot(ctx context.Context, chatID uint32, resp
 				ChatID:  chatID,
 				SentAt:  time.Now(),
 				FromBot: true,
+				Role:    model.RoleAssistant,
 				Message: result.String(),
 			})
 		}()

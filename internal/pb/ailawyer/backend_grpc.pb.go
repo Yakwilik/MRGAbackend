@@ -42,10 +42,13 @@ type BackendClient interface {
 	SignUPV1(ctx context.Context, in *SignUPRequest, opts ...grpc.CallOption) (*SignUPResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	CheckLogin(ctx context.Context, in *CheckLoginRequest, opts ...grpc.CallOption) (*CheckLoginResponse, error)
+	// Deprecated: Do not use.
 	BeginConversation(ctx context.Context, in *BeginConversationRequest, opts ...grpc.CallOption) (*BeginConversationResponse, error)
 	GetConversations(ctx context.Context, in *GetConversationsRequest, opts ...grpc.CallOption) (*GetConversationsResponse, error)
 	GetConversation(ctx context.Context, in *GetConversationRequest, opts ...grpc.CallOption) (*GetConversationResponse, error)
+	// Deprecated: Do not use.
 	SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error)
+	// Deprecated: Do not use.
 	SendMessageV2(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (Backend_SendMessageV2Client, error)
 	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error)
@@ -90,6 +93,7 @@ func (c *backendClient) CheckLogin(ctx context.Context, in *CheckLoginRequest, o
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *backendClient) BeginConversation(ctx context.Context, in *BeginConversationRequest, opts ...grpc.CallOption) (*BeginConversationResponse, error) {
 	out := new(BeginConversationResponse)
 	err := c.cc.Invoke(ctx, Backend_BeginConversation_FullMethodName, in, out, opts...)
@@ -117,6 +121,7 @@ func (c *backendClient) GetConversation(ctx context.Context, in *GetConversation
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *backendClient) SendMessage(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (*SendMessageResponse, error) {
 	out := new(SendMessageResponse)
 	err := c.cc.Invoke(ctx, Backend_SendMessage_FullMethodName, in, out, opts...)
@@ -126,6 +131,7 @@ func (c *backendClient) SendMessage(ctx context.Context, in *SendMessageRequest,
 	return out, nil
 }
 
+// Deprecated: Do not use.
 func (c *backendClient) SendMessageV2(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (Backend_SendMessageV2Client, error) {
 	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[0], Backend_SendMessageV2_FullMethodName, opts...)
 	if err != nil {
@@ -289,10 +295,13 @@ type BackendServer interface {
 	SignUPV1(context.Context, *SignUPRequest) (*SignUPResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	CheckLogin(context.Context, *CheckLoginRequest) (*CheckLoginResponse, error)
+	// Deprecated: Do not use.
 	BeginConversation(context.Context, *BeginConversationRequest) (*BeginConversationResponse, error)
 	GetConversations(context.Context, *GetConversationsRequest) (*GetConversationsResponse, error)
 	GetConversation(context.Context, *GetConversationRequest) (*GetConversationResponse, error)
+	// Deprecated: Do not use.
 	SendMessage(context.Context, *SendMessageRequest) (*SendMessageResponse, error)
+	// Deprecated: Do not use.
 	SendMessageV2(*SendMessageRequest, Backend_SendMessageV2Server) error
 	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error)

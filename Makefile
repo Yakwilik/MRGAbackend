@@ -50,6 +50,9 @@ PG_PASSWORD=qwerty
 migrate:
 	goose -dir migrations postgres "user=postgres password=${PG_PASSWORD} dbname=postgres host=localhost port=5432 sslmode=disable" up
 
+migrate-down:
+	goose -dir migrations postgres "user=postgres password=${PG_PASSWORD} dbname=postgres host=localhost port=5432 sslmode=disable" down
+
 .PHONY: templ
 templ:
 	templ generate ./internal/...

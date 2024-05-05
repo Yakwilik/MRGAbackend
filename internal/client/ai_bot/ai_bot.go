@@ -60,19 +60,14 @@ func encodeMessagesToPromptAndHistory(messages []model.Message) (string, []histo
 		if index == lastMessageID {
 			prompt = message.Message
 		} else {
-			historyMessages = append(historyMessages, historyMessage{
-				Role: getRole(message.FromChatBot),
-				Text: message.Message,
-			})
+			if message.Role == model.RoleUser || message.Role == model.RoleAssistant {
+				historyMessages = append(historyMessages, historyMessage{
+					Role: message.Role.String(),
+					Text: message.Message,
+				})
+			}
 		}
 	}
 
 	return prompt, historyMessages
-}
-
-func getRole(fromBot bool) string {
-	if fromBot {
-		return "assistant"
-	}
-	return "user"
 }
