@@ -34,7 +34,7 @@ func (a *adapter) GetPromptAnswer(ctx context.Context, prompt string) (string, e
 }
 
 func (a *adapter) GetPromptAnswerWithChatHistory(ctx context.Context, chatID uint32) (string, error) {
-	messages, err := a.useCase.GetConversation(ctx, chatID)
+	_, messages, err := a.useCase.GetConversation(ctx, chatID)
 	if err != nil {
 		return "", err
 	}

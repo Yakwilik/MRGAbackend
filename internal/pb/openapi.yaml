@@ -432,6 +432,8 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Message'
+                chatName:
+                    type: string
         GetConversationsResponse:
             type: object
             properties:

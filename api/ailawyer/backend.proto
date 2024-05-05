@@ -276,6 +276,7 @@ message GetConversationRequest{
 
 message GetConversationResponse{
   repeated Message messages = 1;
+  string chat_name = 2;
 }
 
 

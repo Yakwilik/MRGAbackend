@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	"github.com/blockloop/scan"
 	"github.com/google/uuid"
@@ -20,7 +21,7 @@ type Interface interface {
 	CreateConversation(ctx context.Context, userEmail string) (uint32, error)
 	CreateMessage(ctx context.Context, data model.CreateMessageData) error
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
-	GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error)
+	GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error)
 	CheckCredentials(ctx context.Context, user model.User) error
 	SetChatName(ctx context.Context, chatID uint32, name string) error
 }
@@ -171,7 +172,7 @@ type message struct {
 	SentAt      time.Time `db:"sent_at"`
 }
 
-func (s *storage) GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error) {
+func (s *storage) GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error) {
 	rows, err := s.db.Query(`
 SELECT message,
        sent_at,
@@ -182,18 +183,23 @@ ORDER BY sent_at ASC;`, chatID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return []model.Message{}, nil
+			return "", []model.Message{}, nil
 		}
-		return nil, fmt.Errorf("error executing query [GetConversation]: %w", err)
+		return "", nil, fmt.Errorf("error executing query [GetConversation]: %w", err)
 	}
 
 	var result []message
 	err = scan.Rows(&result, rows)
 	if err != nil {
-		return nil, fmt.Errorf("error executing query [GetConversation]: %w", err)
+		return "", nil, fmt.Errorf("error executing query [GetConversation]: %w", err)
 	}
 
-	return decodeMessages(result), nil
+	var chatName string
+	if err := s.db.QueryRow(`SELECT chat_name FROM chats WHERE chat_id = $1`, chatID).Scan(&chatName); err != nil {
+		logger.Error(ctx, "GetConversation", "error", err.Error())
+	}
+
+	return chatName, decodeMessages(result), nil
 }
 
 func decodeMessages(dbMessages []message) []model.Message {

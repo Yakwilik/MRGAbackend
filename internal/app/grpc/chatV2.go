@@ -22,7 +22,7 @@ func (a *Implementation) SendMessageV2(request *pb.SendMessageRequest, server pb
 		return err
 	}
 
-	history, err := a.useCase.GetConversation(server.Context(), request.GetChatId())
+	_, history, err := a.useCase.GetConversation(server.Context(), request.GetChatId())
 	if err != nil {
 		return err
 	}

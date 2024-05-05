@@ -107,12 +107,15 @@ func (a *Implementation) GetConversation(ctx context.Context, request *pb.GetCon
 		return nil, err
 	}
 
-	messages, err := a.useCase.GetConversation(ctx, request.GetId())
+	chatName, messages, err := a.useCase.GetConversation(ctx, request.GetId())
 	if err != nil {
 		return nil, status.New(codes.Internal, err.Error()).Err()
 	}
 
-	return &pb.GetConversationResponse{Messages: encodeMessages(messages)}, nil
+	return &pb.GetConversationResponse{
+		Messages: encodeMessages(messages),
+		ChatName: chatName,
+	}, nil
 }
 
 func decodeSendMessageRequest(chatID uint32, newMessage *pb.NewMessage) model.CreateMessageData {

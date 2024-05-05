@@ -23,7 +23,7 @@ type UseCase interface {
 	SendMessage(ctx context.Context, data model.CreateMessageData) error
 	SendMessageV2(ctx context.Context, data model.CreateMessageData) (<-chan *model.ChatResponseChunk, error)
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
-	GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error)
+	GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error)
 }
 
 type usecase struct {
@@ -99,7 +99,7 @@ func (a *usecase) GetConversations(ctx context.Context, userEmail string) ([]mod
 	return a.storage.GetConversations(ctx, userEmail)
 }
 
-func (a *usecase) GetConversation(ctx context.Context, chatID uint32) ([]model.Message, error) {
+func (a *usecase) GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error) {
 	return a.storage.GetConversation(ctx, chatID)
 }
 
@@ -108,7 +108,7 @@ func (a *usecase) SendMessageV2(ctx context.Context, data model.CreateMessageDat
 		return nil, fmt.Errorf("SendMessageV2: a.SendMessage: %w", err)
 	}
 
-	history, err := a.GetConversation(ctx, data.ChatID)
+	_, history, err := a.GetConversation(ctx, data.ChatID)
 	if err != nil {
 		return nil, fmt.Errorf("SendMessageV2: a.GetConversation: %w", err)
 	}
