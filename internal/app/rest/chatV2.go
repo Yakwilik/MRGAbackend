@@ -50,6 +50,7 @@ func (receiver *Handler) sendMsgV2(w http.ResponseWriter, r *http.Request) {
 	responseChan, err := receiver.useCase.SendMessageV2(r.Context(), model.CreateMessageData{
 		ChatID:  request.ChatID,
 		SentAt:  request.Message.SentAt,
+		Role:    model.RoleUser,
 		FromBot: false,
 		Message: request.Message.Message,
 	})

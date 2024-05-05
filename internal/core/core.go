@@ -161,7 +161,7 @@ func (a *usecase) DeleteSession(ctx context.Context, sessionID string) error {
 }
 
 func (a *usecase) SetChatNameByQuery(ctx context.Context, chatID uint32, query string) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute)
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute*10)
 	defer cancel()
 	chatName, err := a.retext.Summarize(timeoutCtx, query, 50)
 	if err != nil {
@@ -181,15 +181,21 @@ func (a *usecase) streamResponseFromBot(ctx context.Context, chatID uint32, resp
 	resultChan := make(chan *model.ChatResponseChunk)
 	go func() {
 		result := strings.Builder{}
+		var messages []model.CreateMessageData
+		aiBotSentAt := time.Now()
 		defer close(resultChan)
 		defer func() {
-			a.SendMessage(ctx, model.CreateMessageData{
+			messages = append(messages, model.CreateMessageData{
 				ChatID:  chatID,
-				SentAt:  time.Now(),
+				SentAt:  aiBotSentAt,
 				FromBot: true,
 				Role:    model.RoleAssistant,
 				Message: result.String(),
 			})
+
+			for _, message := range messages {
+				a.SendMessage(ctx, message)
+			}
 		}()
 
 		for part := range respChan {
@@ -197,8 +203,19 @@ func (a *usecase) streamResponseFromBot(ctx context.Context, chatID uint32, resp
 			case <-ctx.Done():
 				return
 			case resultChan <- part:
-				if part.MessageStatus == model.StatusOk && part.Role == model.RoleAssistant {
-					result.WriteString(part.Chunk)
+				if part.MessageStatus == model.StatusOk {
+					if part.Role == model.RoleAssistant {
+						aiBotSentAt = time.Now()
+						result.WriteString(part.Chunk)
+					} else {
+						messages = append(messages, model.CreateMessageData{
+							ChatID:  chatID,
+							SentAt:  time.Now(),
+							FromBot: false,
+							Message: part.Chunk,
+							Role:    part.Role,
+						})
+					}
 				}
 			}
 		}

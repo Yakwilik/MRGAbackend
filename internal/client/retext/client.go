@@ -90,6 +90,7 @@ func (c *clientImpl) PostTask(ctx context.Context, task taskRequest) (postTaskRe
 		return postTaskResponse{}, model.WrapErrorWithMethodName(err, "SendPromptWithContext")
 	}
 
+	logger.Info(ctx, "Summarize", "responseBody", decodedResp, "PostTask", decodedResp.Data.TaskId)
 	return decodedResp, nil
 }
 
