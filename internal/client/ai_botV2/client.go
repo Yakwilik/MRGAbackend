@@ -3,7 +3,6 @@ package ai_botV2
 import (
 	"context"
 	"crypto/rand"
-	"fmt"
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	pb "github.com/Yakwilik/MRGAbackend/internal/pb/chatbot"
@@ -87,12 +86,30 @@ func mockResponse(config *helper.MockResponseConfig, chatID uint32) (<-chan *mod
 			case <-ticker.C:
 				responseChan <- &model.ChatResponseChunk{
 					Role:          model.RoleAssistant,
-					Chunk:         fmt.Sprintf("%sсообщение%d", GenerateRandomString(config.BatchSize), i),
+					Chunk:         GenerateRandomString(config.BatchSize),
 					MessageStatus: model.StatusOk,
 					ChatID:        chatID,
 				}
 			}
+		}
+		if config.Redirect != "" {
+			<-ticker.C
+			responseChan <- &model.ChatResponseChunk{
+				Role:          model.RoleDocumentRedirect,
+				Chunk:         config.Redirect,
+				MessageStatus: model.StatusOk,
+				ChatID:        chatID,
+			}
+		}
 
+		if config.AdditionalQuestions != "" {
+			<-ticker.C
+			responseChan <- &model.ChatResponseChunk{
+				Role:          model.RoleExtraQuestions,
+				ChatID:        chatID,
+				MessageStatus: model.StatusOk,
+				Chunk:         config.AdditionalQuestions,
+			}
 		}
 	}()
 

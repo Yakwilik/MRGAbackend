@@ -46,7 +46,7 @@ func main() {
 	})
 	core := corePkg.New(storage, aiBotService)
 	app.WithCustomRestHandler(rest.New(cfg, core, aiBotService).Init()).
-		WithPublicMuxMiddleware(helper.HelperMiddleware, scratch.LoggingMiddleware).
+		WithPublicMuxMiddleware(helper.MockResponseMiddleware, scratch.LoggingMiddleware).
 		WithCustomRestMiddleware(func(handler http.Handler) http.Handler {
 			return corePkg.AuthMiddleware(core, handler)
 		}).WithPublicMuxMiddleware(scratch.CorsMiddleware)
