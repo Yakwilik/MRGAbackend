@@ -155,3 +155,37 @@ func (s *storage) AddDocumentVariants(ctx context.Context, docType model.CreateV
 
 	return nil
 }
+
+func (s *storage) GetDocumentInfoByKey(ctx context.Context, key string) (model.DocumentInfo, error) {
+	rows, err := s.db.Query(`SELECT c.category_name,
+       dt.type_name,
+       dv.key,
+       dv.name
+FROM document_categories c
+         JOIN
+     document_types dt ON c.category_id = dt.category_id
+         JOIN
+     document_variants dv ON dt.type_id = dv.type_id
+where key = $1;`, key)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.DocumentInfo{}, model.ErrNotFound
+		}
+		return model.DocumentInfo{}, fmt.Errorf("error executing insert [GetDocumentInfoByKey]: %w", err)
+	}
+
+	var dbResult documentInfo
+	if err := scan.Row(&dbResult, rows); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.DocumentInfo{}, model.ErrNotFound
+		}
+		return model.DocumentInfo{}, fmt.Errorf("error executing insert [GetDocumentInfoByKey]: %w", err)
+	}
+
+	return model.DocumentInfo{
+		CategoryName: dbResult.CategoryName,
+		TypeName:     dbResult.TypeName,
+		Key:          dbResult.Key,
+		Name:         dbResult.Name,
+	}, nil
+}

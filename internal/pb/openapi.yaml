@@ -23,7 +23,7 @@ servers:
             enum:
                 - localhost
                 - 194.61.3.193
-                - meetme-app.ru
+                - yurist-bot.com
             default: localhost
         base_url:
             enum:
@@ -158,6 +158,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CheckLoginResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/documents/by_key/{key}:
+        get:
+            tags:
+                - Backend
+            operationId: Backend_GetDocumentInfoByKey
+            parameters:
+                - name: key
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetDocumentInfoByKeyResponse'
                 default:
                     description: Default error response
                     content:
@@ -544,6 +568,17 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Conversation'
+        GetDocumentInfoByKeyResponse:
+            type: object
+            properties:
+                key:
+                    type: string
+                category:
+                    type: string
+                type:
+                    type: string
+                name:
+                    type: string
         GetHotThemesResponse:
             type: object
             properties:

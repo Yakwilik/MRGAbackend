@@ -105,3 +105,15 @@ func (a *usecase) AddDocumentVariants(ctx context.Context, doctype model.CreateV
 
 	return nil
 }
+
+func (a *usecase) GetDocumentInfoByKey(ctx context.Context, key string) (model.DocumentInfo, error) {
+	info, err := a.storage.GetDocumentInfoByKey(ctx, key)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return model.DocumentInfo{}, model.NewValidationError("variant", "document_variant not found", "Вариант документа с таким ключем не найден")
+		}
+		return model.DocumentInfo{}, err
+	}
+
+	return info, nil
+}

@@ -113,3 +113,20 @@ func decodeVariants(pbVariants []*pb.DocumentVariant) []model.DocumentVariant {
 
 	return result
 }
+
+func (a *Implementation) GetDocumentInfoByKey(ctx context.Context, request *pb.GetDocumentInfoByKeyRequest) (*pb.GetDocumentInfoByKeyResponse, error) {
+	info, err := a.useCase.GetDocumentInfoByKey(ctx, request.GetKey())
+	if err != nil {
+		if errValidation := new(model.ValidationError); errors.As(err, &errValidation) {
+			return nil, errValidation.WithDetails(codes.InvalidArgument)
+		}
+		return nil, err
+	}
+
+	return &pb.GetDocumentInfoByKeyResponse{
+		Key:      info.Key,
+		Category: info.CategoryName,
+		Type:     info.TypeName,
+		Name:     info.Name,
+	}, nil
+}

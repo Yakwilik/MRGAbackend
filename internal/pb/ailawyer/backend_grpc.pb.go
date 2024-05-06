@@ -28,6 +28,7 @@ const (
 	Backend_SendMessage_FullMethodName               = "/mrga.backend.Backend/SendMessage"
 	Backend_SendMessageV2_FullMethodName             = "/mrga.backend.Backend/SendMessageV2"
 	Backend_GetDocumentCategories_FullMethodName     = "/mrga.backend.Backend/GetDocumentCategories"
+	Backend_GetDocumentInfoByKey_FullMethodName      = "/mrga.backend.Backend/GetDocumentInfoByKey"
 	Backend_SendRedirectSuggest_FullMethodName       = "/mrga.backend.Backend/SendRedirectSuggest"
 	Backend_GetHotThemes_FullMethodName              = "/mrga.backend.Backend/GetHotThemes"
 	Backend_AddDocumentCategory_FullMethodName       = "/mrga.backend.Backend/AddDocumentCategory"
@@ -54,6 +55,7 @@ type BackendClient interface {
 	// Deprecated: Do not use.
 	SendMessageV2(ctx context.Context, in *SendMessageRequest, opts ...grpc.CallOption) (Backend_SendMessageV2Client, error)
 	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
+	GetDocumentInfoByKey(ctx context.Context, in *GetDocumentInfoByKeyRequest, opts ...grpc.CallOption) (*GetDocumentInfoByKeyResponse, error)
 	SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error)
 	GetHotThemes(ctx context.Context, in *GetHotThemesRequest, opts ...grpc.CallOption) (*GetHotThemesResponse, error)
 	AddDocumentCategory(ctx context.Context, in *AddDocumentCategoryRequest, opts ...grpc.CallOption) (*AddDocumentCategoryResponse, error)
@@ -173,6 +175,15 @@ func (x *backendSendMessageV2Client) Recv() (*MessageV2, error) {
 func (c *backendClient) GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error) {
 	out := new(GetCategoriesResponse)
 	err := c.cc.Invoke(ctx, Backend_GetDocumentCategories_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *backendClient) GetDocumentInfoByKey(ctx context.Context, in *GetDocumentInfoByKeyRequest, opts ...grpc.CallOption) (*GetDocumentInfoByKeyResponse, error) {
+	out := new(GetDocumentInfoByKeyResponse)
+	err := c.cc.Invoke(ctx, Backend_GetDocumentInfoByKey_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -337,6 +348,7 @@ type BackendServer interface {
 	// Deprecated: Do not use.
 	SendMessageV2(*SendMessageRequest, Backend_SendMessageV2Server) error
 	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
+	GetDocumentInfoByKey(context.Context, *GetDocumentInfoByKeyRequest) (*GetDocumentInfoByKeyResponse, error)
 	SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error)
 	GetHotThemes(context.Context, *GetHotThemesRequest) (*GetHotThemesResponse, error)
 	AddDocumentCategory(context.Context, *AddDocumentCategoryRequest) (*AddDocumentCategoryResponse, error)
@@ -378,6 +390,9 @@ func (UnimplementedBackendServer) SendMessageV2(*SendMessageRequest, Backend_Sen
 }
 func (UnimplementedBackendServer) GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentCategories not implemented")
+}
+func (UnimplementedBackendServer) GetDocumentInfoByKey(context.Context, *GetDocumentInfoByKeyRequest) (*GetDocumentInfoByKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocumentInfoByKey not implemented")
 }
 func (UnimplementedBackendServer) SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRedirectSuggest not implemented")
@@ -577,6 +592,24 @@ func _Backend_GetDocumentCategories_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BackendServer).GetDocumentCategories(ctx, req.(*GetCategoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Backend_GetDocumentInfoByKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocumentInfoByKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackendServer).GetDocumentInfoByKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Backend_GetDocumentInfoByKey_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackendServer).GetDocumentInfoByKey(ctx, req.(*GetDocumentInfoByKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -782,6 +815,10 @@ var Backend_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDocumentCategories",
 			Handler:    _Backend_GetDocumentCategories_Handler,
+		},
+		{
+			MethodName: "GetDocumentInfoByKey",
+			Handler:    _Backend_GetDocumentInfoByKey_Handler,
 		},
 		{
 			MethodName: "SendRedirectSuggest",

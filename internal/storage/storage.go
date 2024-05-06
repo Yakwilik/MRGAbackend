@@ -28,6 +28,7 @@ type Interface interface {
 	AddDocumentCategory(ctx context.Context, categoryName string) error
 	AddDocumentTypes(ctx context.Context, category model.CreateTypesRequest) error
 	AddDocumentVariants(ctx context.Context, docType model.CreateVariantsRequest) error
+	GetDocumentInfoByKey(ctx context.Context, key string) (model.DocumentInfo, error)
 }
 
 type storage struct {

@@ -48,7 +48,7 @@ option (gnostic.openapi.v3.document) = {
             enum: [
               "localhost",
               "194.61.3.193",
-              "meetme-app.ru"
+              "yurist-bot.com"
             ];
             default: "localhost";
           };
@@ -131,6 +131,13 @@ service Backend{
     };
   }
 
+  rpc GetDocumentInfoByKey(GetDocumentInfoByKeyRequest) returns (GetDocumentInfoByKeyResponse) {
+    option(google.api.http) = {
+      get: "/v1/documents/by_key/{key}"
+    };
+  }
+
+
   rpc SendRedirectSuggest(SendRedirectSuggestRequest) returns (SendRedirectSuggestResponse) {
     option(google.api.http) = {
       post: "/v1/suggest_redirect"
@@ -211,6 +218,17 @@ message SendRedirectSuggestRequest{
 message SendRedirectSuggestResponse{}
 
 message GetCategoriesRequest {}
+
+message GetDocumentInfoByKeyRequest {
+  string key = 1;
+}
+
+message GetDocumentInfoByKeyResponse {
+  string key = 1;
+  string category = 2;
+  string type = 3;
+  string name = 4;
+}
 
 message GetCategoriesResponse {
   repeated DocumentCategory categories = 1;
