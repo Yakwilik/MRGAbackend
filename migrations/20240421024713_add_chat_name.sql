@@ -7,5 +7,6 @@ ALTER TABLE chats
 -- +goose Down
 -- +goose StatementBegin
 ALTER TABLE chats
-DROP COLUMN chat_name;
+DROP
+COLUMN chat_name;
 -- +goose StatementEnd

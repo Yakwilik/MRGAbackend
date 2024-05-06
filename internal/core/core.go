@@ -24,6 +24,10 @@ type UseCase interface {
 	SendMessageV2(ctx context.Context, data model.CreateMessageData) (<-chan *model.ChatResponseChunk, error)
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
 	GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error)
+	GetDocumentCategories(ctx context.Context) ([]model.DocumentCategory, error)
+	AddDocumentCategory(ctx context.Context, categoryName string) error
+	AddDocumentTypes(ctx context.Context, category model.CreateTypesRequest) error
+	AddDocumentVariants(ctx context.Context, category model.CreateVariantsRequest) error
 }
 
 type usecase struct {

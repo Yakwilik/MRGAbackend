@@ -24,6 +24,10 @@ type Interface interface {
 	GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error)
 	CheckCredentials(ctx context.Context, user model.User) error
 	SetChatName(ctx context.Context, chatID uint32, name string) error
+	GetDocumentsInfo(ctx context.Context) ([]model.DocumentInfo, error)
+	AddDocumentCategory(ctx context.Context, categoryName string) error
+	AddDocumentTypes(ctx context.Context, category model.CreateTypesRequest) error
+	AddDocumentVariants(ctx context.Context, docType model.CreateVariantsRequest) error
 }
 
 type storage struct {
@@ -79,6 +83,7 @@ func (s *storage) CreateUser(ctx context.Context, user model.User) error {
 	_, err := s.db.Exec("INSERT INTO users (email, password_hash) values ($1, $2)", user.Email, user.Password)
 
 	if err != nil {
+		logger.Error(ctx, "CreateUser", "err", err)
 		if pqErr := new(pq.Error); errors.As(err, &pqErr) {
 			if pqErr.Code.Name() == UNIQUE_VIOLATION {
 				return model.ErrAlreadyExists

@@ -24,6 +24,11 @@ type Implementation struct {
 	aiBotService ai_botV2.Interface
 }
 
+func (a *Implementation) mustEmbedUnimplementedBackendServer() {
+	//TODO implement me
+	panic("implement me")
+}
+
 type BackendServiceDesc struct {
 	svc pb.BackendServer
 }

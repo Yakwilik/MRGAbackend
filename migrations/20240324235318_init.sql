@@ -1,9 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE
-    users (
-              email text NOT NULL UNIQUE,
-              password_hash text NOT NULL
+    users
+(
+    email         text NOT NULL UNIQUE,
+    password_hash text NOT NULL
 
 );
 -- +goose StatementEnd

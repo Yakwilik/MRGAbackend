@@ -1,15 +1,17 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE chats (
+CREATE TABLE chats
+(
     chat_id bigserial primary key,
-    email text NOT NULL references users(email)
+    email   text NOT NULL references users (email)
 );
 
-CREATE TABLE messages (
-    chat_id bigint NOT NULL references chats(chat_id),
-    sent_at timestamptz NOT NULL DEFAULT now(),
-    message text NOT NULL DEFAULT ''::text,
-    from_bot bool NOT NULL DEFAULT false
+CREATE TABLE messages
+(
+    chat_id  bigint      NOT NULL references chats (chat_id),
+    sent_at  timestamptz NOT NULL DEFAULT now(),
+    message  text        NOT NULL DEFAULT ''::text,
+    from_bot bool        NOT NULL DEFAULT false
 );
 -- +goose StatementEnd
 

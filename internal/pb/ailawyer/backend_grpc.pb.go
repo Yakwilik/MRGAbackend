@@ -30,6 +30,9 @@ const (
 	Backend_GetDocumentCategories_FullMethodName     = "/mrga.backend.Backend/GetDocumentCategories"
 	Backend_SendRedirectSuggest_FullMethodName       = "/mrga.backend.Backend/SendRedirectSuggest"
 	Backend_GetHotThemes_FullMethodName              = "/mrga.backend.Backend/GetHotThemes"
+	Backend_AddDocumentCategory_FullMethodName       = "/mrga.backend.Backend/AddDocumentCategory"
+	Backend_AddDocumentTypes_FullMethodName          = "/mrga.backend.Backend/AddDocumentTypes"
+	Backend_AddDocumentVariants_FullMethodName       = "/mrga.backend.Backend/AddDocumentVariants"
 	Backend_TestStreamFromServer_FullMethodName      = "/mrga.backend.Backend/TestStreamFromServer"
 	Backend_TestStreamFromClient_FullMethodName      = "/mrga.backend.Backend/TestStreamFromClient"
 	Backend_TestStreamClientAndServer_FullMethodName = "/mrga.backend.Backend/TestStreamClientAndServer"
@@ -53,6 +56,9 @@ type BackendClient interface {
 	GetDocumentCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(ctx context.Context, in *SendRedirectSuggestRequest, opts ...grpc.CallOption) (*SendRedirectSuggestResponse, error)
 	GetHotThemes(ctx context.Context, in *GetHotThemesRequest, opts ...grpc.CallOption) (*GetHotThemesResponse, error)
+	AddDocumentCategory(ctx context.Context, in *AddDocumentCategoryRequest, opts ...grpc.CallOption) (*AddDocumentCategoryResponse, error)
+	AddDocumentTypes(ctx context.Context, in *AddDocumentTypesRequest, opts ...grpc.CallOption) (*AddDocumentTypesResponse, error)
+	AddDocumentVariants(ctx context.Context, in *DocumentType, opts ...grpc.CallOption) (*AddDocumentVariantsResponse, error)
 	TestStreamFromServer(ctx context.Context, in *TestMessageRequest, opts ...grpc.CallOption) (Backend_TestStreamFromServerClient, error)
 	TestStreamFromClient(ctx context.Context, opts ...grpc.CallOption) (Backend_TestStreamFromClientClient, error)
 	TestStreamClientAndServer(ctx context.Context, opts ...grpc.CallOption) (Backend_TestStreamClientAndServerClient, error)
@@ -191,6 +197,33 @@ func (c *backendClient) GetHotThemes(ctx context.Context, in *GetHotThemesReques
 	return out, nil
 }
 
+func (c *backendClient) AddDocumentCategory(ctx context.Context, in *AddDocumentCategoryRequest, opts ...grpc.CallOption) (*AddDocumentCategoryResponse, error) {
+	out := new(AddDocumentCategoryResponse)
+	err := c.cc.Invoke(ctx, Backend_AddDocumentCategory_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *backendClient) AddDocumentTypes(ctx context.Context, in *AddDocumentTypesRequest, opts ...grpc.CallOption) (*AddDocumentTypesResponse, error) {
+	out := new(AddDocumentTypesResponse)
+	err := c.cc.Invoke(ctx, Backend_AddDocumentTypes_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *backendClient) AddDocumentVariants(ctx context.Context, in *DocumentType, opts ...grpc.CallOption) (*AddDocumentVariantsResponse, error) {
+	out := new(AddDocumentVariantsResponse)
+	err := c.cc.Invoke(ctx, Backend_AddDocumentVariants_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *backendClient) TestStreamFromServer(ctx context.Context, in *TestMessageRequest, opts ...grpc.CallOption) (Backend_TestStreamFromServerClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Backend_ServiceDesc.Streams[1], Backend_TestStreamFromServer_FullMethodName, opts...)
 	if err != nil {
@@ -306,6 +339,9 @@ type BackendServer interface {
 	GetDocumentCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
 	SendRedirectSuggest(context.Context, *SendRedirectSuggestRequest) (*SendRedirectSuggestResponse, error)
 	GetHotThemes(context.Context, *GetHotThemesRequest) (*GetHotThemesResponse, error)
+	AddDocumentCategory(context.Context, *AddDocumentCategoryRequest) (*AddDocumentCategoryResponse, error)
+	AddDocumentTypes(context.Context, *AddDocumentTypesRequest) (*AddDocumentTypesResponse, error)
+	AddDocumentVariants(context.Context, *DocumentType) (*AddDocumentVariantsResponse, error)
 	TestStreamFromServer(*TestMessageRequest, Backend_TestStreamFromServerServer) error
 	TestStreamFromClient(Backend_TestStreamFromClientServer) error
 	TestStreamClientAndServer(Backend_TestStreamClientAndServerServer) error
@@ -348,6 +384,15 @@ func (UnimplementedBackendServer) SendRedirectSuggest(context.Context, *SendRedi
 }
 func (UnimplementedBackendServer) GetHotThemes(context.Context, *GetHotThemesRequest) (*GetHotThemesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHotThemes not implemented")
+}
+func (UnimplementedBackendServer) AddDocumentCategory(context.Context, *AddDocumentCategoryRequest) (*AddDocumentCategoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDocumentCategory not implemented")
+}
+func (UnimplementedBackendServer) AddDocumentTypes(context.Context, *AddDocumentTypesRequest) (*AddDocumentTypesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDocumentTypes not implemented")
+}
+func (UnimplementedBackendServer) AddDocumentVariants(context.Context, *DocumentType) (*AddDocumentVariantsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDocumentVariants not implemented")
 }
 func (UnimplementedBackendServer) TestStreamFromServer(*TestMessageRequest, Backend_TestStreamFromServerServer) error {
 	return status.Errorf(codes.Unimplemented, "method TestStreamFromServer not implemented")
@@ -572,6 +617,60 @@ func _Backend_GetHotThemes_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Backend_AddDocumentCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddDocumentCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackendServer).AddDocumentCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Backend_AddDocumentCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackendServer).AddDocumentCategory(ctx, req.(*AddDocumentCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Backend_AddDocumentTypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddDocumentTypesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackendServer).AddDocumentTypes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Backend_AddDocumentTypes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackendServer).AddDocumentTypes(ctx, req.(*AddDocumentTypesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Backend_AddDocumentVariants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DocumentType)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BackendServer).AddDocumentVariants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Backend_AddDocumentVariants_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BackendServer).AddDocumentVariants(ctx, req.(*DocumentType))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Backend_TestStreamFromServer_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(TestMessageRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -691,6 +790,18 @@ var Backend_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetHotThemes",
 			Handler:    _Backend_GetHotThemes_Handler,
+		},
+		{
+			MethodName: "AddDocumentCategory",
+			Handler:    _Backend_AddDocumentCategory_Handler,
+		},
+		{
+			MethodName: "AddDocumentTypes",
+			Handler:    _Backend_AddDocumentTypes_Handler,
+		},
+		{
+			MethodName: "AddDocumentVariants",
+			Handler:    _Backend_AddDocumentVariants_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
