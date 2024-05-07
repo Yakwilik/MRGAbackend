@@ -3,11 +3,12 @@ package model
 import "time"
 
 type CreateMessageData struct {
-	ChatID  uint32
-	SentAt  time.Time
-	FromBot bool
-	Message string
-	Role    Role
+	ChatID         uint32
+	SentAt         time.Time
+	FromBot        bool
+	Message        string
+	ExtraQuestions []ExtraQuestion
+	Role           Role
 }
 
 type ConversationData struct {
@@ -20,10 +21,11 @@ type ConversationData struct {
 }
 
 type Message struct {
-	Message     string
-	FromChatBot bool
-	SentAt      time.Time
-	Role        Role
+	Message        string
+	FromChatBot    bool
+	SentAt         time.Time
+	Role           Role
+	ExtraQuestions []ExtraQuestion
 }
 
 type HistoryMessage struct {

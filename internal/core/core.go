@@ -94,7 +94,7 @@ func (a *usecase) BeginConversation(ctx context.Context, userEmail string) (uint
 }
 
 func (a *usecase) SendMessage(ctx context.Context, data model.CreateMessageData) error {
-	if strings.TrimSpace(data.Message) == "" {
+	if data.Role != model.RoleExtraQuestions && strings.TrimSpace(data.Message) == "" {
 		return model.NewValidationError("message", "message must not be empy", "Сообщение не может быть пустым")
 	}
 	return a.storage.CreateMessage(ctx, data)
@@ -199,7 +199,23 @@ func (a *usecase) streamResponseFromBot(ctx context.Context, chatID uint32, resp
 			})
 
 			for _, message := range messages {
-				a.SendMessage(ctx, message)
+				switch message.Role {
+				case model.RoleExtraQuestions:
+					q, err := model.ParseQuestions(message.Message)
+					if err != nil {
+						logger.Info(ctx, "ParseQuestions", "err", err.Error())
+						continue
+					}
+					a.SendMessage(ctx, model.CreateMessageData{
+						ChatID:         message.ChatID,
+						SentAt:         message.SentAt,
+						FromBot:        message.FromBot,
+						ExtraQuestions: q,
+						Role:           message.Role,
+					})
+				default:
+					a.SendMessage(ctx, message)
+				}
 			}
 		}()
 

@@ -18,4 +18,5 @@ CREATE TABLE messages
 -- +goose Down
 -- +goose StatementBegin
 DROP TABLE chats;
+DROP TABLE messages;
 -- +goose StatementEnd

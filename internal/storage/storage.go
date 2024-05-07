@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
@@ -107,8 +108,17 @@ func (s *storage) CreateConversation(ctx context.Context, userEmail string) (uin
 }
 
 func (s *storage) CreateMessage(ctx context.Context, data model.CreateMessageData) error {
-	_, err := s.db.Exec("insert into messages (chat_id, sent_at, message, from_bot, role) VALUES ($1, $2, $3, $4, $5)", data.ChatID, data.SentAt, data.Message, data.FromBot, data.Role)
-	if err != nil {
+	var extraQBytes = []byte("{}")
+	if data.Role == model.RoleExtraQuestions {
+		var err error
+		extraQBytes, err = json.Marshal(data.ExtraQuestions)
+		if err != nil {
+			logger.Error(ctx, "CreateMessage", "marshal_error", err)
+			extraQBytes = []byte("{}")
+		}
+	}
+
+	if _, err := s.db.Exec("insert into messages (chat_id, sent_at, message, from_bot, role, extra_questions) VALUES ($1, $2, $3, $4, $5, $6::jsonb)", data.ChatID, data.SentAt, data.Message, data.FromBot, data.Role, string(extraQBytes)); err != nil {
 		return fmt.Errorf("error executing query [CreateMessage]: %w", err)
 	}
 
@@ -116,12 +126,13 @@ func (s *storage) CreateMessage(ctx context.Context, data model.CreateMessageDat
 }
 
 type conversationData struct {
-	ChatName    string     `db:"chat_name"`
-	LastMessage string     `db:"last_message"`
-	FromChatBot bool       `db:"from_bot"`
-	SentAt      time.Time  `db:"sent_at"`
-	ChatID      uint32     `db:"chat_id"`
-	Role        model.Role `db:"role"`
+	ChatName       string     `db:"chat_name"`
+	LastMessage    string     `db:"last_message"`
+	FromChatBot    bool       `db:"from_bot"`
+	SentAt         time.Time  `db:"sent_at"`
+	ChatID         uint32     `db:"chat_id"`
+	Role           model.Role `db:"role"`
+	ExtraQuestions []byte     `db:"extra_questions"`
 }
 
 func (s *storage) GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error) {
@@ -131,14 +142,16 @@ SELECT DISTINCT c.chat_id,
                 m.message AS last_message,
                 m.sent_at AS sent_at,
 				m.from_bot AS from_bot,
-				m.role AS role
+				m.role AS role,
+				m.extra_questions as extra_questions
 FROM chats c
          INNER JOIN
      (SELECT chat_id,
              message,
              sent_at,
              from_bot,
-             role
+             role,
+             extra_questions
       FROM messages
       WHERE (chat_id, sent_at) IN (SELECT chat_id, MAX(sent_at) AS sent_at
                                    FROM messages
@@ -163,24 +176,37 @@ ORDER BY m.sent_at DESC;`, userEmail)
 func decodeConversations(dbData []conversationData) []model.ConversationData {
 	result := make([]model.ConversationData, 0, len(dbData))
 	for _, dbModel := range dbData {
-		result = append(result, model.ConversationData{
-			ChatName:    dbModel.ChatName,
-			LastMessage: dbModel.LastMessage,
-			FromChatBot: dbModel.FromChatBot,
-			SentAt:      dbModel.SentAt,
-			ChatID:      dbModel.ChatID,
-			Role:        dbModel.Role,
-		})
+		switch dbModel.Role {
+		case model.RoleExtraQuestions:
+			result = append(result, model.ConversationData{
+				ChatName:    dbModel.ChatName,
+				LastMessage: string(dbModel.ExtraQuestions),
+				FromChatBot: dbModel.FromChatBot,
+				SentAt:      dbModel.SentAt,
+				ChatID:      dbModel.ChatID,
+				Role:        dbModel.Role,
+			})
+		default:
+			result = append(result, model.ConversationData{
+				ChatName:    dbModel.ChatName,
+				LastMessage: dbModel.LastMessage,
+				FromChatBot: dbModel.FromChatBot,
+				SentAt:      dbModel.SentAt,
+				ChatID:      dbModel.ChatID,
+				Role:        dbModel.Role,
+			})
+		}
 	}
 
 	return result
 }
 
 type message struct {
-	Message     string     `db:"message"`
-	FromChatBot bool       `db:"from_bot"`
-	SentAt      time.Time  `db:"sent_at"`
-	Role        model.Role `db:"role"`
+	Message        string     `db:"message"`
+	FromChatBot    bool       `db:"from_bot"`
+	SentAt         time.Time  `db:"sent_at"`
+	Role           model.Role `db:"role"`
+	ExtraQuestions []byte     `db:"extra_questions"`
 }
 
 func (s *storage) GetConversation(ctx context.Context, chatID uint32) (string, []model.Message, error) {
@@ -188,7 +214,8 @@ func (s *storage) GetConversation(ctx context.Context, chatID uint32) (string, [
 SELECT message,
        sent_at,
        from_bot,
-       role
+       role,
+       extra_questions
 FROM messages
 WHERE chat_id = $1
 ORDER BY sent_at ASC;`, chatID)
@@ -217,12 +244,28 @@ ORDER BY sent_at ASC;`, chatID)
 func decodeMessages(dbMessages []message) []model.Message {
 	result := make([]model.Message, 0, len(dbMessages))
 	for _, dbModel := range dbMessages {
-		result = append(result, model.Message{
-			Message:     dbModel.Message,
-			FromChatBot: dbModel.FromChatBot,
-			SentAt:      dbModel.SentAt,
-			Role:        dbModel.Role,
-		})
+		switch dbModel.Role {
+		case model.RoleExtraQuestions:
+			var extraQuestions []model.ExtraQuestion
+			if err := json.Unmarshal(dbModel.ExtraQuestions, &extraQuestions); err != nil {
+				continue
+			}
+			result = append(result, model.Message{
+				FromChatBot:    dbModel.FromChatBot,
+				SentAt:         dbModel.SentAt,
+				Role:           dbModel.Role,
+				ExtraQuestions: extraQuestions,
+				Message:        string(dbModel.ExtraQuestions),
+			})
+
+		default:
+			result = append(result, model.Message{
+				Message:     dbModel.Message,
+				FromChatBot: dbModel.FromChatBot,
+				SentAt:      dbModel.SentAt,
+				Role:        dbModel.Role,
+			})
+		}
 	}
 
 	return result
