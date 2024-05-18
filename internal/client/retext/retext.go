@@ -6,6 +6,7 @@ import (
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	"time"
+	"unicode/utf8"
 )
 
 type Interface interface {
@@ -23,6 +24,10 @@ func New() Interface {
 }
 
 func (a *adapter) Summarize(ctx context.Context, message string, resultMaxLen uint32) (string, error) {
+	if uint32(utf8.RuneCountInString(message)) <= resultMaxLen {
+		return message, nil
+	}
+
 	postTaskResp, err := a.cli.PostTask(ctx, taskRequest{
 		Task:       taskSummarize,
 		SourceText: message,

@@ -9,10 +9,12 @@ func encodeToChatHistory(messages []model.Message) []model.HistoryMessage {
 		if index == lastMessageID {
 			continue
 		} else {
-			historyMessages = append(historyMessages, model.HistoryMessage{
-				Role: model.GetRole(message.FromChatBot),
-				Text: message.Message,
-			})
+			if message.Role == model.RoleUser || message.Role == model.RoleAssistant {
+				historyMessages = append(historyMessages, model.HistoryMessage{
+					Role: message.Role,
+					Text: message.Message,
+				})
+			}
 		}
 	}
 

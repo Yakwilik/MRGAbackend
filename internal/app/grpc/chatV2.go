@@ -97,6 +97,7 @@ var protoRole = map[model.Role]pb.MessageRole{
 	model.RoleTechnical:        pb.MessageRole_technical,
 	model.RoleDocumentRedirect: pb.MessageRole_document_redirect,
 	model.RoleExtraQuestions:   pb.MessageRole_extra_questions,
+	model.RoleError:            pb.MessageRole_error,
 }
 
 var protoStatus = map[model.MessageStatus]pb.MessageStatus{

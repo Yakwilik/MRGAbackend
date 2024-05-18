@@ -17,6 +17,7 @@ var (
 	RoleTechnical        Role = "technical"
 	RoleDocumentRedirect Role = "document_redirect"
 	RoleExtraQuestions   Role = "extra_questions"
+	RoleError            Role = "error"
 )
 
 type MessageStatus string

@@ -84,10 +84,18 @@ func mockResponse(config *helper.MockResponseConfig, chatID uint32) (<-chan *mod
 		for i := 0; i < config.IterationCount; i++ {
 			select {
 			case <-ticker.C:
+				role := model.RoleAssistant
+				status := model.StatusOk
+				if config.CustomRole != "" {
+					role = model.Role(config.CustomRole)
+					if role == model.RoleError {
+						status = model.StatusFail
+					}
+				}
 				responseChan <- &model.ChatResponseChunk{
-					Role:          model.RoleAssistant,
+					Role:          role,
 					Chunk:         GenerateRandomString(config.BatchSize),
-					MessageStatus: model.StatusOk,
+					MessageStatus: status,
 					ChatID:        chatID,
 				}
 			}
@@ -149,6 +157,16 @@ func (a adapter) RespondToUserQuery(ctx context.Context, request model.ChatReque
 				break
 			}
 
+			if model.Role(response.GetRole()) == model.RoleError {
+				responseChan <- &model.ChatResponseChunk{
+					Role:          model.RoleError,
+					Chunk:         response.GetOutput(),
+					MessageStatus: model.StatusFail,
+					ErrorDetails:  response.GetOutput(),
+					ChatID:        request.ChatID,
+				}
+			}
+
 			responseChan <- &model.ChatResponseChunk{
 				Role:          model.Role(response.GetRole()),
 				Chunk:         response.GetOutput(),
@@ -174,17 +192,12 @@ func encodeChatHistory(chatHistory []model.HistoryMessage) []*pb.ChatMessage {
 	if len(chatHistory) == 0 {
 		return []*pb.ChatMessage{}
 	}
-	lastMessageID := len(chatHistory) - 1
-	response := make([]*pb.ChatMessage, 0, len(chatHistory)-1)
-	for index, msg := range chatHistory {
-		if index == lastMessageID {
-			continue
-		} else {
-			response = append(response, &pb.ChatMessage{
-				Role: msg.Role.String(),
-				Text: msg.Text,
-			})
-		}
+	response := make([]*pb.ChatMessage, 0, len(chatHistory))
+	for _, msg := range chatHistory {
+		response = append(response, &pb.ChatMessage{
+			Role: msg.Role.String(),
+			Text: msg.Text,
+		})
 	}
 
 	return response

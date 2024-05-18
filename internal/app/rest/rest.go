@@ -29,6 +29,7 @@ func (receiver *Handler) Init() *http.ServeMux {
 	receiver.mux.HandleFunc("POST /connect", receiver.centrifugoConnect)
 	receiver.mux.HandleFunc("POST /v2/chats/send", receiver.sendMsgV2)
 	receiver.mux.HandleFunc("POST /v2/chats/begin", receiver.beginConversationV2)
+	receiver.mux.HandleFunc("POST /v2/chats/retry", receiver.retryLastMessage)
 	receiver.mux.HandleFunc("POST /v1/auth/logout", receiver.logout)
 	return receiver.mux
 }

@@ -20,6 +20,7 @@ type UseCase interface {
 	DeleteSession(ctx context.Context, sessionID string) error
 	BeginConversation(ctx context.Context, userEmail string) (uint32, error)
 	BeginConversationV2(ctx context.Context, userEmail string, userMessage string) (<-chan *model.ChatResponseChunk, error)
+	RetryLastMessage(ctx context.Context, chatID uint32) (<-chan *model.ChatResponseChunk, error)
 	SendMessage(ctx context.Context, data model.CreateMessageData) error
 	SendMessageV2(ctx context.Context, data model.CreateMessageData) (<-chan *model.ChatResponseChunk, error)
 	GetConversations(ctx context.Context, userEmail string) ([]model.ConversationData, error)
@@ -243,4 +244,48 @@ func (a *usecase) streamResponseFromBot(ctx context.Context, chatID uint32, resp
 	}()
 
 	return resultChan
+}
+
+func (a *usecase) RetryLastMessage(ctx context.Context, chatID uint32) (<-chan *model.ChatResponseChunk, error) {
+	_, history, err := a.GetConversation(ctx, chatID)
+	if err != nil {
+		return nil, fmt.Errorf("RetryLastMessage: a.GetConversation: %w", err)
+	}
+
+	responseChan, err := a.aiBot.RespondToUserQuery(ctx, encodeToChatRequest(chatID, history))
+	if err != nil {
+		return nil, fmt.Errorf("RetryLastMessage: a.aiBot.RespondToUserQuery: %w", err)
+	}
+
+	return a.streamResponseFromBot(ctx, chatID, responseChan), nil
+
+}
+
+func encodeToChatRequest(chatID uint32, history []model.Message) model.ChatRequest {
+	var userQuery string
+	lastMessageIndex := len(history) - 1
+	chatHistory := make([]model.HistoryMessage, len(history)-1)
+
+	for i := lastMessageIndex; i >= 0; i-- {
+		if history[i].Role == model.RoleUser {
+			userQuery = history[i].Message
+			lastMessageIndex = i
+			break
+		}
+	}
+
+	for i := 0; i < lastMessageIndex; i++ {
+		if history[i].Role == model.RoleUser || history[i].Role == model.RoleAssistant {
+			chatHistory = append(chatHistory, model.HistoryMessage{
+				Role: history[i].Role,
+				Text: history[i].Message,
+			})
+		}
+	}
+
+	return model.ChatRequest{
+		ChatID:      chatID,
+		UserQuery:   userQuery,
+		ChatHistory: chatHistory,
+	}
 }

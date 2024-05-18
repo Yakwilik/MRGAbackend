@@ -15,6 +15,7 @@ type MockResponseConfig struct {
 	Redirect            string
 	AdditionalQuestions string
 	IterationTimeout    time.Duration
+	CustomRole          string
 }
 
 type mockResponseConfigKey struct{}
@@ -29,6 +30,7 @@ func MockResponseMiddleware(next http.Handler) http.Handler {
 		mockResponseIterationTimeout := r.Header.Get("X-Mock-Response-Iteration-Timeout")
 		mockResponseRedirectKey := r.Header.Get("X-Mock-Response-Redirect-Key")
 		mockResponseAdditionalQuestions := r.Header.Get("X-Mock-Response-Additional-Questions")
+		mockResponseCustomRole := r.Header.Get("X-Mock-Response-Custom-Role")
 
 		// Преобразуем данные в нужный формат
 		generate, _ := strconv.ParseBool(genMockResponse)
@@ -44,6 +46,7 @@ func MockResponseMiddleware(next http.Handler) http.Handler {
 			IterationTimeout:    iterationTimeout,
 			Redirect:            mockResponseRedirectKey,
 			AdditionalQuestions: mockResponseAdditionalQuestions,
+			CustomRole:          mockResponseCustomRole,
 		}
 
 		// Положим структуру в контекст
