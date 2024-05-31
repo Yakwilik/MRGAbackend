@@ -3,16 +3,17 @@ package ai_botV2
 import (
 	"context"
 	"crypto/rand"
+	"io"
+	"log"
+	"math/big"
+	"time"
+
 	"github.com/Yakwilik/MRGAbackend/internal/logger"
 	"github.com/Yakwilik/MRGAbackend/internal/model"
 	pb "github.com/Yakwilik/MRGAbackend/internal/pb/chatbot"
 	"github.com/Yakwilik/MRGAbackend/internal/pkg/helper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
-	"log"
-	"math/big"
-	"time"
 )
 
 type client interface {
@@ -81,6 +82,15 @@ func mockResponse(config *helper.MockResponseConfig, chatID uint32) (<-chan *mod
 		ticker := time.NewTicker(config.IterationTimeout)
 		defer ticker.Stop()
 
+		if config.AdditionalQuestions != "" {
+			<-ticker.C
+			responseChan <- &model.ChatResponseChunk{
+				Role:          model.RoleExtraQuestions,
+				ChatID:        chatID,
+				MessageStatus: model.StatusOk,
+				Chunk:         config.AdditionalQuestions,
+			}
+		}
 		for i := 0; i < config.IterationCount; i++ {
 			select {
 			case <-ticker.C:
@@ -107,16 +117,6 @@ func mockResponse(config *helper.MockResponseConfig, chatID uint32) (<-chan *mod
 				Chunk:         config.Redirect,
 				MessageStatus: model.StatusOk,
 				ChatID:        chatID,
-			}
-		}
-
-		if config.AdditionalQuestions != "" {
-			<-ticker.C
-			responseChan <- &model.ChatResponseChunk{
-				Role:          model.RoleExtraQuestions,
-				ChatID:        chatID,
-				MessageStatus: model.StatusOk,
-				Chunk:         config.AdditionalQuestions,
 			}
 		}
 	}()
