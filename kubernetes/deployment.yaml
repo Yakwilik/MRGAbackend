@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: speranskiy-backend
-          image: yakwilik/speranskiy_backend
+          image: dockerhub.timeweb.cloud/yakwilik/speranskiy_backend
           ports:
             - containerPort: 7001
             - containerPort: 7002

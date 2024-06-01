@@ -67,4 +67,4 @@ jobs:
             kubernetes/ingress.yaml
             kubernetes/service.yaml
           images: |
-            ${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:${{ github.sha }}
+            dockerhub.timeweb.cloud/${{ secrets.DOCKER_USERNAME }}/speranskiy_backend:${{ github.sha }}
