@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: speranskiy-backend-deployment-stg
+  labels:
+    app: speranskiy-backend-stg
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: speranskiy-backend-stg
+  template:
+    metadata:
+      labels:
+        app: speranskiy-backend-stg
+    spec:
+      containers:
+        - name: speranskiy-backend-stg
+          image: dockerhub.timeweb.cloud/yakwilik/speranskiy_backend
+          ports:
+            - containerPort: 7001
+            - containerPort: 7002
+          envFrom:
+          - configMapRef:
+              name: backend-config-stg
+          env:
+          - name: DBPassword
+            valueFrom:
+              secretKeyRef:
+                name: db-password-secret
+                key: DBPassword
+          - name: X_APP_BOT_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: x-app-bot-auth-token
+                name: bot-api-token
