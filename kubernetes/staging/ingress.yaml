@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: speranskiy-backend-ingress
+  name: speranskiy-backend-ingress-stg
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
