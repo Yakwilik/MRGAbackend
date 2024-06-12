@@ -67,6 +67,8 @@ jobs:
         uses: azure/k8s-deploy@v1
         with:
           namespace: default
+          wait-for-stability: true
+          wait-for-service: false
           manifests: |
             kubernetes/production/deployment.yaml
             kubernetes/production/ingress.yaml
