@@ -1,0 +1,19 @@
+name: Purge GitHub Actions cache
+
+on:
+  push:
+    paths:
+      - '.github/workflows/purge-actions-cache.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all GitHub Actions caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh cache delete --all --succeed-on-no-caches
